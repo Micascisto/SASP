@@ -1,4 +1,10 @@
-# USGS ASP Scripts #
+# Stefano's version of USGS ASP Scripts #
+
+I modified USGS ASP Scripts and added some of my own to produce CTX, HiRISE, and HRSC DEMs from stereo pairs.
+I thank USGS for providing this amazing toolset for free to the community.
+
+## Original USGS introduction ##
+
 This Git repository consolidates a collection of Bash scripts that have been developed as part of a highly-automated workflow for generating digital terrain models (DTMs) from CTX and HiRISE stereo image data using the NASA Ames Stereo Pipeline (ASP).
 
 This repository was manually forked from the UChicago ASP Scripts project, hosted at the University of Chicago: https://psd-repo.uchicago.edu/kite-lab/uchicago_asp_scripts
@@ -14,8 +20,7 @@ Most of these Bash scripts are wrappers for the various USGS ISIS3 and ASP binar
 -- At USGS, we use a USGS-modified version that works on most modern flavors of Linux, and Mac OS X <https://github.com/USGS-Astrogeology/socet_set/blob/master/SS4HiRISE/Software/ISIS3_MACHINE/SOURCE_CODE/pedr2tab.PCLINUX.f>
 
 ## Supported Platforms ##
-These scripts have been developed and tested on recent versions of Fedora, Ubuntu and Scientific Linux. They should work on other flavors of GNU/Linux either natively or in a VM.
-I expect some of the scripts will fail on Mac OS X because the versions of *sed* and *awk* that ship with OS X tend to be older and have different functionality compared to their GNU cousins. A workaround would be to compile GNU versions of these programs from source or install from a package manager like MacPorts or Homebrew.
+This version of USGS ASP Scripts has been tested only on Linux Ubuntu and CentOS systems.
 
 ## Basic Usage ##
 Scripts for processing CTX and HiRISE data are organized into their own subdirectories.  The order in which individual scripts should be run is listed below. Please see comments in the individual scripts for detailed usage information.  Running any of the scripts without arguments will print a usage message.
@@ -34,12 +39,11 @@ Scripts for processing CTX and HiRISE data are organized into their own subdirec
 3. (Estimate max displacement between initial HiRISE DTM and reference DTM, such as CTX, using your favorite GIS)
 4. asp_hirise_pc_align2dem.sh
 
-## Referencing This Workflow ##
-Please cite one or both of the following LPSC abstracts in any publications that make use of this work or derivatives thereof:
+## Referencing this Workflow ##
+Please give all credits to the USGS Team by citing one or both of the following LPSC abstracts in any publications that make use of this work or derivatives thereof:
 1. Mayer, D.P. and Kite, E.S., "An Integrated Workflow for Producing Digital Terrain Models of Mars from CTX and HiRISE Stereo Data Using the NASA Ames Stereo Pipeline," (2016) LPSC XLVII, Abstr. #1241. <https://www.hou.usra.edu/meetings/lpsc2016/pdf/1241.pdf>
 E-poster: <https://www.lpi.usra.edu/meetings/lpsc2016/eposter/1241.pdf>
 2. Mayer, D. P., "An Improved Workflow for Producing Digital Terrain Models of Mars from CTX Stereo Data Using the NASA Ames Stereo Pipeline," (2018) LPSC XLIX, Abstr. #1604. <https://www.hou.usra.edu/meetings/lpsc2018/pdf/1604.pdf>
 E-poster: <https://www.hou.usra.edu/meetings/lpsc2018/eposter/1604.pdf>
 
-
-The Ames Stereo Pipeline itself should be cited according to guidelines outlined in the official ASP documentation.
+The Ames Stereo Pipeline itself should be cited according to guidelines outlined in the official ASP documentation: <https://ti.arc.nasa.gov/tech/asr/groups/intelligent-robotics/ngt/stereo/>
