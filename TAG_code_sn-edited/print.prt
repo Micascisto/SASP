@@ -1,0 +1,2054 @@
+Object = mroctx2isis
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2008-09-02
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:00:46
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Import an MRO CTX image as an Isis cube"
+
+  Group = UserParameters
+    FROM    = K01_053930_1994_XI_19N232W.IMG
+    TO      = K01_053930_1994_XI_19N232W.cub
+    FILLGAP = true
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:25.0
+    CpuTime     = 00:00:14.9
+  End_Group
+End_Object
+
+
+Object = mroctx2isis
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2008-09-02
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:00:46
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Import an MRO CTX image as an Isis cube"
+
+  Group = UserParameters
+    FROM    = P07_003717_1986_XN_18N232W.IMG
+    TO      = P07_003717_1986_XN_18N232W.cub
+    FILLGAP = true
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:29.0
+    CpuTime     = 00:00:18.2
+  End_Group
+End_Object
+
+
+Object = spiceinit
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-04-27
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:15
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Update SPICE data (kernels, pointing, and position) for
+                       a camera cube"
+
+  Group = UserParameters
+    FROM         = K01_053930_1994_XI_19N232W.cub
+    WEB          = false
+    ATTACH       = TRUE
+    CKSMITHED    = FALSE
+    CKRECON      = TRUE
+    CKPREDICTED  = FALSE
+    CKNADIR      = FALSE
+    SPKSMITHED   = FALSE
+    SPKRECON     = TRUE
+    SPKPREDICTED = FALSE
+    SHAPE        = SYSTEM
+    STARTPAD     = 0.0
+    ENDPAD       = 0.0
+    URL          = http://services.isis.astrogeology.usgs.gov/cgi-bin/spicein-
+                   it.cgi
+    PORT         = 80
+  End_Group
+
+  Group = Error
+    Program = spiceinit
+    Code    = 1
+    Message = "No Camera Kernels found for the image
+               [K01_053930_1994_XI_19N232W.cub]"
+    File    = spiceinit.cpp
+    Line    = 174
+  End_Group
+End_Object
+
+
+Object = spiceinit
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-04-27
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:15
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Update SPICE data (kernels, pointing, and position) for
+                       a camera cube"
+
+  Group = UserParameters
+    FROM         = P07_003717_1986_XN_18N232W.cub
+    WEB          = false
+    ATTACH       = TRUE
+    CKSMITHED    = FALSE
+    CKRECON      = TRUE
+    CKPREDICTED  = FALSE
+    CKNADIR      = FALSE
+    SPKSMITHED   = FALSE
+    SPKRECON     = TRUE
+    SPKPREDICTED = FALSE
+    SHAPE        = SYSTEM
+    STARTPAD     = 0.0
+    ENDPAD       = 0.0
+    URL          = http://services.isis.astrogeology.usgs.gov/cgi-bin/spicein-
+                   it.cgi
+    PORT         = 80
+  End_Group
+
+  Group = Kernels
+    NaifFrameCode             = -74021
+    LeapSecond                = $base/kernels/lsk/naif0012.tls
+    TargetAttitudeShape       = $base/kernels/pck/pck00009.tpc
+    TargetPosition            = $base/kernels/spk/de405.bsp
+    InstrumentPointing        = ($mro/kernels/ck/mro_sc_psp_070508_070514.bc,
+                                 $mro/kernels/fk/mro_v15.tf)
+    Instrument                = Null
+    SpacecraftClock           = $mro/kernels/sclk/MRO_SCLKSCET.00064.65536.tsc
+    InstrumentPosition        = $mro/kernels/spk/mro_psp3.bsp
+    InstrumentAddendum        = $mro/kernels/iak/mroctxAddendum005.ti
+    ShapeModel                = $base/dems/molaMarsPlanetaryRadius0005.cub
+    InstrumentPositionQuality = Reconstructed
+    InstrumentPointingQuality = Reconstructed
+    CameraVersion             = 1
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:03.0
+    CpuTime     = 00:00:02.0
+  End_Group
+End_Object
+
+
+Object = ctxcal
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-06-23
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:18
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Radiometrically calibrates a CTX image"
+
+  Group = UserParameters
+    FROM = K01_053930_1994_XI_19N232W.cub
+    TO   = K01_053930_1994_XI_19N232W_cal.cub
+    IOF  = True
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:21.0
+    CpuTime     = 00:00:08.1
+  End_Group
+End_Object
+
+
+Object = ctxcal
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-06-23
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:18
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Radiometrically calibrates a CTX image"
+
+  Group = UserParameters
+    FROM = P07_003717_1986_XN_18N232W.cub
+    TO   = P07_003717_1986_XN_18N232W_cal.cub
+    IOF  = True
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:24.0
+    CpuTime     = 00:00:09.8
+  End_Group
+End_Object
+
+
+Object = camrange
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2012-10-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:43
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Compute the lat/lon range of a camera image"
+
+  Group = UserParameters
+    FROM = K01_053930_1994_XI_19N232W_cal.cub
+    TO   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camrang-
+           egaBYEn.txt
+  End_Group
+
+  Group = Error
+    Program = camrange
+    Code    = 1
+    Message = "Unable to initialize camera model from group [Instrument]"
+    File    = CameraFactory.cpp
+    Line    = 100
+  End_Group
+
+  Group = Error
+    Program = camrange
+    Code    = 1
+    Message = "PVL Keyword [TargetPosition] does not exist in [Group =
+               Kernels]"
+    File    = PvlContainer.cpp
+    Line    = 84
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:47
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = K01_053930_1994_XI_19N232W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Error
+    Program = catlab
+    Class   = "I/O ERROR"
+    Code    = 4
+    Message = "Unable to open [K01_053930_1994_XI_19N232W_cal.map.cub]"
+    File    = Pvl.cpp
+    Line    = 86
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:47
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = K01_053930_1994_XI_19N232W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Error
+    Program = catlab
+    Class   = "I/O ERROR"
+    Code    = 4
+    Message = "Unable to open [K01_053930_1994_XI_19N232W_cal.map.cub]"
+    File    = Pvl.cpp
+    Line    = 86
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:47
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = K01_053930_1994_XI_19N232W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Error
+    Program = catlab
+    Class   = "I/O ERROR"
+    Code    = 4
+    Message = "Unable to open [K01_053930_1994_XI_19N232W_cal.map.cub]"
+    File    = Pvl.cpp
+    Line    = 86
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:47
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = K01_053930_1994_XI_19N232W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Error
+    Program = catlab
+    Class   = "I/O ERROR"
+    Code    = 4
+    Message = "Unable to open [K01_053930_1994_XI_19N232W_cal.map.cub]"
+    File    = Pvl.cpp
+    Line    = 86
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:01:47
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = K01_053930_1994_XI_19N232W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Error
+    Program = catlab
+    Class   = "I/O ERROR"
+    Code    = 4
+    Message = "Unable to open [K01_053930_1994_XI_19N232W_cal.map.cub]"
+    File    = Pvl.cpp
+    Line    = 86
+  End_Group
+End_Object
+
+
+Object = mroctx2isis
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2008-09-02
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:24:33
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Import an MRO CTX image as an Isis cube"
+
+  Group = UserParameters
+    FROM    = G22_026977_2013_XI_21N233W.IMG
+    TO      = G22_026977_2013_XI_21N233W.cub
+    FILLGAP = true
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:20.0
+    CpuTime     = 00:00:12.8
+  End_Group
+End_Object
+
+
+Object = mroctx2isis
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2008-09-02
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:24:33
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Import an MRO CTX image as an Isis cube"
+
+  Group = UserParameters
+    FROM    = G20_026054_2007_XI_20N233W.IMG
+    TO      = G20_026054_2007_XI_20N233W.cub
+    FILLGAP = true
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:28.0
+    CpuTime     = 00:00:18.4
+  End_Group
+End_Object
+
+
+Object = spiceinit
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-04-27
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:01
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Update SPICE data (kernels, pointing, and position) for
+                       a camera cube"
+
+  Group = UserParameters
+    FROM         = G22_026977_2013_XI_21N233W.cub
+    WEB          = false
+    ATTACH       = TRUE
+    CKSMITHED    = FALSE
+    CKRECON      = TRUE
+    CKPREDICTED  = FALSE
+    CKNADIR      = FALSE
+    SPKSMITHED   = FALSE
+    SPKRECON     = TRUE
+    SPKPREDICTED = FALSE
+    SHAPE        = SYSTEM
+    STARTPAD     = 0.0
+    ENDPAD       = 0.0
+    URL          = http://services.isis.astrogeology.usgs.gov/cgi-bin/spicein-
+                   it.cgi
+    PORT         = 80
+  End_Group
+
+  Group = Kernels
+    NaifFrameCode             = -74021
+    LeapSecond                = $base/kernels/lsk/naif0012.tls
+    TargetAttitudeShape       = $base/kernels/pck/pck00009.tpc
+    TargetPosition            = $base/kernels/spk/de405.bsp
+    InstrumentPointing        = ($mro/kernels/ck/mro_sc_psp_120424_120430.bc,
+                                 $mro/kernels/fk/mro_v15.tf)
+    Instrument                = Null
+    SpacecraftClock           = $mro/kernels/sclk/MRO_SCLKSCET.00064.65536.tsc
+    InstrumentPosition        = $mro/kernels/spk/mro_psp23.bsp
+    InstrumentAddendum        = $mro/kernels/iak/mroctxAddendum005.ti
+    ShapeModel                = $base/dems/molaMarsPlanetaryRadius0005.cub
+    InstrumentPositionQuality = Reconstructed
+    InstrumentPointingQuality = Reconstructed
+    CameraVersion             = 1
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:02.0
+    CpuTime     = 00:00:02.1
+  End_Group
+End_Object
+
+
+Object = spiceinit
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-04-27
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:01
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Update SPICE data (kernels, pointing, and position) for
+                       a camera cube"
+
+  Group = UserParameters
+    FROM         = G20_026054_2007_XI_20N233W.cub
+    WEB          = false
+    ATTACH       = TRUE
+    CKSMITHED    = FALSE
+    CKRECON      = TRUE
+    CKPREDICTED  = FALSE
+    CKNADIR      = FALSE
+    SPKSMITHED   = FALSE
+    SPKRECON     = TRUE
+    SPKPREDICTED = FALSE
+    SHAPE        = SYSTEM
+    STARTPAD     = 0.0
+    ENDPAD       = 0.0
+    URL          = http://services.isis.astrogeology.usgs.gov/cgi-bin/spicein-
+                   it.cgi
+    PORT         = 80
+  End_Group
+
+  Group = Kernels
+    NaifFrameCode             = -74021
+    LeapSecond                = $base/kernels/lsk/naif0012.tls
+    TargetAttitudeShape       = $base/kernels/pck/pck00009.tpc
+    TargetPosition            = $base/kernels/spk/de405.bsp
+    InstrumentPointing        = ($mro/kernels/ck/mro_sc_psp_120214_120220.bc,
+                                 $mro/kernels/fk/mro_v15.tf)
+    Instrument                = Null
+    SpacecraftClock           = $mro/kernels/sclk/MRO_SCLKSCET.00064.65536.tsc
+    InstrumentPosition        = $mro/kernels/spk/mro_psp22.bsp
+    InstrumentAddendum        = $mro/kernels/iak/mroctxAddendum005.ti
+    ShapeModel                = $base/dems/molaMarsPlanetaryRadius0005.cub
+    InstrumentPositionQuality = Reconstructed
+    InstrumentPointingQuality = Reconstructed
+    CameraVersion             = 1
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:03.0
+    CpuTime     = 00:00:02.1
+  End_Group
+End_Object
+
+
+Object = ctxcal
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-06-23
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:04
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Radiometrically calibrates a CTX image"
+
+  Group = UserParameters
+    FROM = G22_026977_2013_XI_21N233W.cub
+    TO   = G22_026977_2013_XI_21N233W_cal.cub
+    IOF  = True
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:16.0
+    CpuTime     = 00:00:07.1
+  End_Group
+End_Object
+
+
+Object = ctxcal
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-06-23
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:04
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Radiometrically calibrates a CTX image"
+
+  Group = UserParameters
+    FROM = G20_026054_2007_XI_20N233W.cub
+    TO   = G20_026054_2007_XI_20N233W_cal.cub
+    IOF  = True
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:21.0
+    CpuTime     = 00:00:10.0
+  End_Group
+End_Object
+
+
+Object = camrange
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2012-10-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:26
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Compute the lat/lon range of a camera image"
+
+  Group = UserParameters
+    FROM = G20_026054_2007_XI_20N233W_cal.cub
+    TO   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camrang-
+           eURmKor.txt
+  End_Group
+
+  Group = Target
+    From       = G20_026054_2007_XI_20N233W_cal.cub
+    TargetName = Mars
+    RadiusA    = 3396190.0 <meters>
+    RadiusB    = 3396190.0 <meters>
+    RadiusC    = 3376200.0 <meters>
+  End_Group
+
+  Group = PixelResolution
+    Lowest  = 5.7312319216314 <meters>
+    Highest = 5.6158298485491 <meters>
+  End_Group
+
+  Group = UniversalGroundRange
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    MinimumLatitude    = 17.901363445145
+    MaximumLatitude    = 23.157027820357
+    MinimumLongitude   = 125.7126419921
+    MaximumLongitude   = 126.88112579296
+  End_Group
+
+  Group = LatitudeRange
+    LatitudeType    = Planetographic
+    MinimumLatitude = 18.100181285004
+    MaximumLatitude = 23.402618457514
+  End_Group
+
+  Group = PositiveWest360
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 360
+    MinimumLongitude   = 233.11887420703
+    MaximumLongitude   = 234.2873580079
+  End_Group
+
+  Group = PositiveEast180
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 180
+    MinimumLongitude   = 125.7126419921
+    MaximumLongitude   = 126.88112579296
+  End_Group
+
+  Group = PositiveWest180
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 180
+    MinimumLongitude   = -126.88112579296
+    MaximumLongitude   = -125.7126419921
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:02.0
+    CpuTime     = 00:00:01.5
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:28
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeURmKor.txt
+    GRPNAME   = PixelResolution
+    KEYWORD   = Lowest
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camra-
+             ngeURmKor.txt
+    Lowest = 5.7312319216314
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:28
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeURmKor.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangeURmKor.txt
+    MinimumLatitude = 17.901363445145
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:28
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeURmKor.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangeURmKor.txt
+    MaximumLatitude = 23.157027820357
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:28
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeURmKor.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangeURmKor.txt
+    MinimumLongitude = 125.7126419921
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:28
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeURmKor.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangeURmKor.txt
+    MaximumLongitude = 126.88112579296
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = camrange
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2012-10-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:28
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Compute the lat/lon range of a camera image"
+
+  Group = UserParameters
+    FROM = G22_026977_2013_XI_21N233W_cal.cub
+    TO   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camrang-
+           ejeDNWQ.txt
+  End_Group
+
+  Group = Target
+    From       = G22_026977_2013_XI_21N233W_cal.cub
+    TargetName = Mars
+    RadiusA    = 3396190.0 <meters>
+    RadiusB    = 3396190.0 <meters>
+    RadiusC    = 3376200.0 <meters>
+  End_Group
+
+  Group = PixelResolution
+    Lowest  = 5.9482812437593 <meters>
+    Highest = 5.7457883256216 <meters>
+  End_Group
+
+  Group = UniversalGroundRange
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    MinimumLatitude    = 19.331960976888
+    MaximumLatitude    = 22.964237868763
+    MinimumLongitude   = 125.69803799013
+    MaximumLongitude   = 126.73271416169
+  End_Group
+
+  Group = LatitudeRange
+    LatitudeType    = Planetographic
+    MinimumLatitude = 19.544251799352
+    MaximumLatitude = 23.208251378349
+  End_Group
+
+  Group = PositiveWest360
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 360
+    MinimumLongitude   = 233.26728583831
+    MaximumLongitude   = 234.30196200987
+  End_Group
+
+  Group = PositiveEast180
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 180
+    MinimumLongitude   = 125.69803799013
+    MaximumLongitude   = 126.73271416169
+  End_Group
+
+  Group = PositiveWest180
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 180
+    MinimumLongitude   = -126.73271416169
+    MaximumLongitude   = -125.69803799013
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:01.0
+    CpuTime     = 00:00:01.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:29
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangejeDNWQ.txt
+    GRPNAME   = PixelResolution
+    KEYWORD   = Lowest
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camra-
+             ngejeDNWQ.txt
+    Lowest = 5.9482812437593
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:29
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangejeDNWQ.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangejeDNWQ.txt
+    MinimumLatitude = 19.331960976888
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:29
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangejeDNWQ.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangejeDNWQ.txt
+    MaximumLatitude = 22.964237868763
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:29
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangejeDNWQ.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangejeDNWQ.txt
+    MinimumLongitude = 125.69803799013
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:29
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangejeDNWQ.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangejeDNWQ.txt
+    MaximumLongitude = 126.73271416169
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = cam2map
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-07-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:25:30
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Convert camera image to a map projection"
+
+  Group = UserParameters
+    FROM          = G20_026054_2007_XI_20N233W_cal.cub
+    MAP           = $base/templates/maps/sinusoidal.map
+    TO            = G20_026054_2007_XI_20N233W_cal.map.cub
+    MATCHMAP      = false
+    PIXRES        = MPP
+    RESOLUTION    = 24
+    DEFAULTRANGE  = MAP
+    MINLAT        = 19.331960976888
+    MAXLAT        = 22.964237868763
+    MINLON        = 125.7126419921
+    MAXLON        = 126.73271416169
+    TRIM          = FALSE
+    INTERP        = CUBICCONVOLUTION
+    WARPALGORITHM = AUTOMATIC
+  End_Group
+
+  Group = Mapping
+    TargetName         = Mars
+    ProjectionName     = Sinusoidal
+    EquatorialRadius   = 3396190.0 <meters>
+    PolarRadius        = 3376200.0 <meters>
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    PixelResolution    = 24.0 <meters/pixel>
+    Scale              = 2469.7790634711 <pixels/degree>
+    UpperLeftCornerX   = -28536.0 <meters>
+    UpperLeftCornerY   = 1361208.0 <meters>
+    MinimumLatitude    = 19.331960976888
+    MaximumLatitude    = 22.964237868763
+    MinimumLongitude   = 125.7126419921
+    MaximumLongitude   = 126.73271416169
+    CenterLongitude    = 126.22267807689
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:19:29.0
+    CpuTime     = 00:20:22.9
+  End_Group
+End_Object
+
+
+Object = cam2map
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-07-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T19:45:00
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Convert camera image to a map projection"
+
+  Group = UserParameters
+    FROM          = G22_026977_2013_XI_21N233W_cal.cub
+    MAP           = $base/templates/maps/sinusoidal.map
+    TO            = G22_026977_2013_XI_21N233W_cal.map.cub
+    MATCHMAP      = false
+    PIXRES        = MPP
+    RESOLUTION    = 24
+    DEFAULTRANGE  = MAP
+    MINLAT        = 19.331960976888
+    MAXLAT        = 22.964237868763
+    MINLON        = 125.7126419921
+    MAXLON        = 126.73271416169
+    TRIM          = FALSE
+    INTERP        = CUBICCONVOLUTION
+    WARPALGORITHM = AUTOMATIC
+  End_Group
+
+  Group = Mapping
+    TargetName         = Mars
+    ProjectionName     = Sinusoidal
+    EquatorialRadius   = 3396190.0 <meters>
+    PolarRadius        = 3376200.0 <meters>
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    PixelResolution    = 24.0 <meters/pixel>
+    Scale              = 2469.7790634711 <pixels/degree>
+    UpperLeftCornerX   = -28536.0 <meters>
+    UpperLeftCornerY   = 1361208.0 <meters>
+    MinimumLatitude    = 19.331960976888
+    MaximumLatitude    = 22.964237868763
+    MinimumLongitude   = 125.7126419921
+    MaximumLongitude   = 126.73271416169
+    CenterLongitude    = 126.22267807689
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:13:45.0
+    CpuTime     = 00:14:44.1
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T20:39:08
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G20_026054_2007_XI_20N233W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T20:39:08
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G20_026054_2007_XI_20N233W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T20:39:08
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G20_026054_2007_XI_20N233W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T20:39:08
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G20_026054_2007_XI_20N233W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-12T20:39:08
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G20_026054_2007_XI_20N233W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = mroctx2isis
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2008-09-02
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:00
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Import an MRO CTX image as an Isis cube"
+
+  Group = UserParameters
+    FROM    = G09_021729_2019_XI_21N234W.IMG
+    TO      = G09_021729_2019_XI_21N234W.cub
+    FILLGAP = true
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:18.0
+    CpuTime     = 00:00:09.8
+  End_Group
+End_Object
+
+
+Object = mroctx2isis
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2008-09-02
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:00
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Import an MRO CTX image as an Isis cube"
+
+  Group = UserParameters
+    FROM    = G10_022019_2019_XI_21N234W.IMG
+    TO      = G10_022019_2019_XI_21N234W.cub
+    FILLGAP = true
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:19.0
+    CpuTime     = 00:00:10.5
+  End_Group
+End_Object
+
+
+Object = spiceinit
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-04-27
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:19
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Update SPICE data (kernels, pointing, and position) for
+                       a camera cube"
+
+  Group = UserParameters
+    FROM         = G09_021729_2019_XI_21N234W.cub
+    WEB          = false
+    ATTACH       = TRUE
+    CKSMITHED    = FALSE
+    CKRECON      = TRUE
+    CKPREDICTED  = FALSE
+    CKNADIR      = FALSE
+    SPKSMITHED   = FALSE
+    SPKRECON     = TRUE
+    SPKPREDICTED = FALSE
+    SHAPE        = SYSTEM
+    STARTPAD     = 0.0
+    ENDPAD       = 0.0
+    URL          = http://services.isis.astrogeology.usgs.gov/cgi-bin/spicein-
+                   it.cgi
+    PORT         = 80
+  End_Group
+
+  Group = Kernels
+    NaifFrameCode             = -74021
+    LeapSecond                = $base/kernels/lsk/naif0012.tls
+    TargetAttitudeShape       = $base/kernels/pck/pck00009.tpc
+    TargetPosition            = $base/kernels/spk/de405.bsp
+    InstrumentPointing        = ($mro/kernels/ck/mro_sc_psp_110315_110321.bc,
+                                 $mro/kernels/fk/mro_v15.tf)
+    Instrument                = Null
+    SpacecraftClock           = $mro/kernels/sclk/MRO_SCLKSCET.00064.65536.tsc
+    InstrumentPosition        = $mro/kernels/spk/mro_psp18.bsp
+    InstrumentAddendum        = $mro/kernels/iak/mroctxAddendum005.ti
+    ShapeModel                = $base/dems/molaMarsPlanetaryRadius0005.cub
+    InstrumentPositionQuality = Reconstructed
+    InstrumentPointingQuality = Reconstructed
+    CameraVersion             = 1
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:02.0
+    CpuTime     = 00:00:01.2
+  End_Group
+End_Object
+
+
+Object = spiceinit
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-04-27
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:19
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Update SPICE data (kernels, pointing, and position) for
+                       a camera cube"
+
+  Group = UserParameters
+    FROM         = G10_022019_2019_XI_21N234W.cub
+    WEB          = false
+    ATTACH       = TRUE
+    CKSMITHED    = FALSE
+    CKRECON      = TRUE
+    CKPREDICTED  = FALSE
+    CKNADIR      = FALSE
+    SPKSMITHED   = FALSE
+    SPKRECON     = TRUE
+    SPKPREDICTED = FALSE
+    SHAPE        = SYSTEM
+    STARTPAD     = 0.0
+    ENDPAD       = 0.0
+    URL          = http://services.isis.astrogeology.usgs.gov/cgi-bin/spicein-
+                   it.cgi
+    PORT         = 80
+  End_Group
+
+  Group = Kernels
+    NaifFrameCode             = -74021
+    LeapSecond                = $base/kernels/lsk/naif0012.tls
+    TargetAttitudeShape       = $base/kernels/pck/pck00009.tpc
+    TargetPosition            = $base/kernels/spk/de405.bsp
+    InstrumentPointing        = ($mro/kernels/ck/mro_sc_psp_110405_110411.bc,
+                                 $mro/kernels/fk/mro_v15.tf)
+    Instrument                = Null
+    SpacecraftClock           = $mro/kernels/sclk/MRO_SCLKSCET.00064.65536.tsc
+    InstrumentPosition        = $mro/kernels/spk/mro_psp19.bsp
+    InstrumentAddendum        = $mro/kernels/iak/mroctxAddendum005.ti
+    ShapeModel                = $base/dems/molaMarsPlanetaryRadius0005.cub
+    InstrumentPositionQuality = Reconstructed
+    InstrumentPointingQuality = Reconstructed
+    CameraVersion             = 1
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:03.0
+    CpuTime     = 00:00:01.9
+  End_Group
+End_Object
+
+
+Object = ctxcal
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-06-23
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:22
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Radiometrically calibrates a CTX image"
+
+  Group = UserParameters
+    FROM = G09_021729_2019_XI_21N234W.cub
+    TO   = G09_021729_2019_XI_21N234W_cal.cub
+    IOF  = True
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:15.0
+    CpuTime     = 00:00:05.3
+  End_Group
+End_Object
+
+
+Object = ctxcal
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2014-06-23
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:22
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Radiometrically calibrates a CTX image"
+
+  Group = UserParameters
+    FROM = G10_022019_2019_XI_21N234W.cub
+    TO   = G10_022019_2019_XI_21N234W_cal.cub
+    IOF  = True
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:15.0
+    CpuTime     = 00:00:05.5
+  End_Group
+End_Object
+
+
+Object = camrange
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2012-10-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:38
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Compute the lat/lon range of a camera image"
+
+  Group = UserParameters
+    FROM = G09_021729_2019_XI_21N234W_cal.cub
+    TO   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camrang-
+           eMb7ZwA.txt
+  End_Group
+
+  Group = Target
+    From       = G09_021729_2019_XI_21N234W_cal.cub
+    TargetName = Mars
+    RadiusA    = 3396190.0 <meters>
+    RadiusB    = 3396190.0 <meters>
+    RadiusC    = 3376200.0 <meters>
+  End_Group
+
+  Group = PixelResolution
+    Lowest  = 6.5303781250552 <meters>
+    Highest = 6.1614148783012 <meters>
+  End_Group
+
+  Group = UniversalGroundRange
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    MinimumLatitude    = 20.291655628209
+    MaximumLatitude    = 23.204253460462
+    MinimumLongitude   = 124.73228175
+    MaximumLongitude   = 125.6968443093
+  End_Group
+
+  Group = LatitudeRange
+    LatitudeType    = Planetographic
+    MinimumLatitude = 20.512685871621
+    MaximumLatitude = 23.45022871524
+  End_Group
+
+  Group = PositiveWest360
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 360
+    MinimumLongitude   = 234.3031556907
+    MaximumLongitude   = 235.26771825
+  End_Group
+
+  Group = PositiveEast180
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 180
+    MinimumLongitude   = 124.73228175
+    MaximumLongitude   = 125.6968443093
+  End_Group
+
+  Group = PositiveWest180
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 180
+    MinimumLongitude   = -125.6968443093
+    MaximumLongitude   = -124.73228175
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:01.0
+    CpuTime     = 00:00:00.8
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:39
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeMb7ZwA.txt
+    GRPNAME   = PixelResolution
+    KEYWORD   = Lowest
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camra-
+             ngeMb7ZwA.txt
+    Lowest = 6.5303781250552
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:39
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeMb7ZwA.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangeMb7ZwA.txt
+    MinimumLatitude = 20.291655628209
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:39
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeMb7ZwA.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangeMb7ZwA.txt
+    MaximumLatitude = 23.204253460462
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:01.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:40
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeMb7ZwA.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangeMb7ZwA.txt
+    MinimumLongitude = 124.73228175
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:40
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangeMb7ZwA.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangeMb7ZwA.txt
+    MaximumLongitude = 125.6968443093
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = camrange
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2012-10-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:40
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Compute the lat/lon range of a camera image"
+
+  Group = UserParameters
+    FROM = G10_022019_2019_XI_21N234W_cal.cub
+    TO   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camrang-
+           ekpEWYr.txt
+  End_Group
+
+  Group = Target
+    From       = G10_022019_2019_XI_21N234W_cal.cub
+    TargetName = Mars
+    RadiusA    = 3396190.0 <meters>
+    RadiusB    = 3396190.0 <meters>
+    RadiusC    = 3376200.0 <meters>
+  End_Group
+
+  Group = PixelResolution
+    Lowest  = 5.7040445005845 <meters>
+    Highest = 5.6210004833102 <meters>
+  End_Group
+
+  Group = UniversalGroundRange
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    MinimumLatitude    = 20.253412936355
+    MaximumLatitude    = 23.269607944304
+    MinimumLongitude   = 124.75917891454
+    MaximumLongitude   = 125.6609626183
+  End_Group
+
+  Group = LatitudeRange
+    LatitudeType    = Planetographic
+    MinimumLatitude = 20.474099668754
+    MaximumLatitude = 23.516114346306
+  End_Group
+
+  Group = PositiveWest360
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 360
+    MinimumLongitude   = 234.3390373817
+    MaximumLongitude   = 235.24082108546
+  End_Group
+
+  Group = PositiveEast180
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 180
+    MinimumLongitude   = 124.75917891454
+    MaximumLongitude   = 125.6609626183
+  End_Group
+
+  Group = PositiveWest180
+    LongitudeDirection = PositiveWest
+    LongitudeDomain    = 180
+    MinimumLongitude   = -125.6609626183
+    MaximumLongitude   = -124.75917891454
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:01.0
+    CpuTime     = 00:00:00.8
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:41
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangekpEWYr.txt
+    GRPNAME   = PixelResolution
+    KEYWORD   = Lowest
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From   = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/camra-
+             ngekpEWYr.txt
+    Lowest = 5.7040445005845
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:41
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangekpEWYr.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangekpEWYr.txt
+    MinimumLatitude = 20.253412936355
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:41
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangekpEWYr.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLatitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From            = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stef-
+                      ano/camrangekpEWYr.txt
+    MaximumLatitude = 23.269607944304
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:41
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangekpEWYr.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MinimumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangekpEWYr.txt
+    MinimumLongitude = 124.75917891454
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = getkey
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-02-04
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:41
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the value of a requested keyword"
+
+  Group = UserParameters
+    FROM      = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/stefano/ca-
+                mrangekpEWYr.txt
+    GRPNAME   = UniversalGroundRange
+    KEYWORD   = MaximumLongitude
+    UPPER     = False
+    RECURSIVE = False
+  End_Group
+
+  Group = Results
+    From             = /disk/qnap-2/MARS/code/modl/TAG_Code/ASP_ISIS_Code/ste-
+                       fano/camrangekpEWYr.txt
+    MaximumLongitude = 125.6609626183
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = cam2map
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-07-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:38:41
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Convert camera image to a map projection"
+
+  Group = UserParameters
+    FROM          = G09_021729_2019_XI_21N234W_cal.cub
+    MAP           = $base/templates/maps/sinusoidal.map
+    TO            = G09_021729_2019_XI_21N234W_cal.map.cub
+    MATCHMAP      = false
+    PIXRES        = MPP
+    RESOLUTION    = 24
+    DEFAULTRANGE  = MAP
+    MINLAT        = 20.291655628209
+    MAXLAT        = 23.204253460462
+    MINLON        = 124.75917891454
+    MAXLON        = 125.6609626183
+    TRIM          = FALSE
+    INTERP        = CUBICCONVOLUTION
+    WARPALGORITHM = AUTOMATIC
+  End_Group
+
+  Group = Mapping
+    TargetName         = Mars
+    ProjectionName     = Sinusoidal
+    EquatorialRadius   = 3396190.0 <meters>
+    PolarRadius        = 3376200.0 <meters>
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    PixelResolution    = 24.0 <meters/pixel>
+    Scale              = 2469.7790634711 <pixels/degree>
+    UpperLeftCornerX   = -25080.0 <meters>
+    UpperLeftCornerY   = 1375440.0 <meters>
+    MinimumLatitude    = 20.291655628209
+    MaximumLatitude    = 23.204253460462
+    MinimumLongitude   = 124.75917891454
+    MaximumLongitude   = 125.6609626183
+    CenterLongitude    = 125.21007076642
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:11:27.0
+    CpuTime     = 00:12:23.0
+  End_Group
+End_Object
+
+
+Object = cam2map
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2013-07-11
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T19:50:08
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Convert camera image to a map projection"
+
+  Group = UserParameters
+    FROM          = G10_022019_2019_XI_21N234W_cal.cub
+    MAP           = $base/templates/maps/sinusoidal.map
+    TO            = G10_022019_2019_XI_21N234W_cal.map.cub
+    MATCHMAP      = false
+    PIXRES        = MPP
+    RESOLUTION    = 24
+    DEFAULTRANGE  = MAP
+    MINLAT        = 20.291655628209
+    MAXLAT        = 23.204253460462
+    MINLON        = 124.75917891454
+    MAXLON        = 125.6609626183
+    TRIM          = FALSE
+    INTERP        = CUBICCONVOLUTION
+    WARPALGORITHM = AUTOMATIC
+  End_Group
+
+  Group = Mapping
+    TargetName         = Mars
+    ProjectionName     = Sinusoidal
+    EquatorialRadius   = 3396190.0 <meters>
+    PolarRadius        = 3376200.0 <meters>
+    LatitudeType       = Planetocentric
+    LongitudeDirection = PositiveEast
+    LongitudeDomain    = 360
+    PixelResolution    = 24.0 <meters/pixel>
+    Scale              = 2469.7790634711 <pixels/degree>
+    UpperLeftCornerX   = -25080.0 <meters>
+    UpperLeftCornerY   = 1375440.0 <meters>
+    MinimumLatitude    = 20.291655628209
+    MaximumLatitude    = 23.204253460462
+    MinimumLongitude   = 124.75917891454
+    MaximumLongitude   = 125.6609626183
+    CenterLongitude    = 125.21007076642
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:12:03.0
+    CpuTime     = 00:12:57.3
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T20:36:42
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G09_021729_2019_XI_21N234W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T20:36:42
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G09_021729_2019_XI_21N234W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T20:36:42
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G09_021729_2019_XI_21N234W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T20:36:43
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G09_021729_2019_XI_21N234W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
+Object = catlab
+  IsisVersion       = "3.4.7.5965 stable | 2014-08-27"
+  ProgramVersion    = 2010-07-26
+  ProgramPath       = /disk/qnap-2/MARS/syst/ext/linux/apps/isis3/isis/bin
+  ExecutionDateTime = 2018-10-13T20:36:43
+  HostName          = melt.ig.utexas.edu
+  UserName          = wais-sn
+  Description       = "Outputs the label from a cube"
+
+  Group = UserParameters
+    FROM   = G09_021729_2019_XI_21N234W_cal.map.cub
+    APPEND = TRUE
+  End_Group
+
+  Group = Accounting
+    ConnectTime = 00:00:00.0
+    CpuTime     = 00:00:00.0
+  End_Group
+End_Object
+
+
