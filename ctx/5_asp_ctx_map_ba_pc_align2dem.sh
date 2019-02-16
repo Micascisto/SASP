@@ -90,22 +90,22 @@ for i in $( cat ${dirs} ); do
     cd ./results_map_ba
     # run pc_align and send the output to a new subdirectory called dem_align
     echo "Running pc_align..."
-    pc_align --num-iterations 2000 --threads 16 --max-displacement $maxd --highest-accuracy ${i}_map_ba-PC.tif ../${i}_pedr4align.csv -o dem_align/${i}_map_ba_align --datum D_MARS --save-inv-trans
+    pc_align --num-iterations 2000 --threads 4 --max-displacement $maxd --highest-accuracy ${i}_map_ba-PC.tif ../${i}_pedr4align.csv -o dem_align/${i}_map_ba_align --datum D_MARS --save-inv-trans
     
     # move down into the directory with the pc_align output, which should be called "dem_align"
     cd ./dem_align
     # Create 24 m/px DEM, ortho, normalized DEM, errorimage, no hole filling
-    echo point2dem --threads 16 --t_srs \"${proj}\" -r mars --nodata -32767 -s 24 ${i}_map_ba_align-trans_reference.tif --orthoimage -n --errorimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_24 | sh
+    echo point2dem --threads 4 --t_srs \"${proj}\" -r mars --nodata -32767 -s 24 ${i}_map_ba_align-trans_reference.tif --orthoimage -n --errorimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_24 | sh
     
     # Run dem_geoid on the align'd 24 m/px DEM so that the elevation values are comparable to MOLA products
-    echo dem_geoid --threads 16 ${i}_map_ba_align_24-DEM.tif -o ${i}_map_ba_align_24-DEM | sh
+    echo dem_geoid --threads 4 ${i}_map_ba_align_24-DEM.tif -o ${i}_map_ba_align_24-DEM | sh
     
     # Create hillshade for 24 m/px DEM
     echo "Generating hillshade with gdaldem"
     gdaldem hillshade ${i}_map_ba_align_24-DEM.tif ${i}_map_ba_align_24-hillshade.tif
     
     # Create 6 m/px ortho, no hole-filling, no DEM
-    echo point2dem --threads 16 --t_srs \"${proj}\" -r mars --nodata -32767 -s 6 ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6 --no-dem | sh
+    echo point2dem --threads 4 --t_srs \"${proj}\" -r mars --nodata -32767 -s 6 ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6 --no-dem | sh
     
     echo "Done with ${i}_ba"
     # Move back up to the root of the stereo project   

@@ -119,7 +119,7 @@ awk '{print $1" "$2 >$3"/stereopair.lis"}' stereopairs.lis
 
 # If this script is run as part of a job on Midway, we write the nodelist to a file named "nodelist.lis" so parallel_stereo can use it
 # This line is NOT portable to environments that are NOT running SLURM
-scontrol show hostname $SLURM_NODELIST | tr ' ' '\n' > nodelist.lis
+# scontrol show hostname $SLURM_NODELIST | tr ' ' '\n' > nodelist.lis
 #######################################################
 
 
@@ -183,13 +183,13 @@ fi
     echo "Begin parallel_stereo on "$i" at "$(date)
     
     # stop parallel_stereo after correlation
-    parallel_stereo --nodes-list=../nodelist.lis -t isis --stop-point 2 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+    parallel_stereo -t isis --stop-point 2 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
 
     # attempt to optimize parallel_stereo for running on the sandyb nodes (16 cores each) for Steps 2 (refinement) and 3 (filtering)
-    parallel_stereo --nodes-list=../nodelist.lis -t isis --processes 2 --threads-multiprocess 8 --threads-singleprocess 16 --entry-point 2 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+    parallel_stereo -t isis --processes 2 --threads-multiprocess 4 --threads-singleprocess 4 --entry-point 2 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
 
     # finish parallel_stereo using default options for Stage 4 (Triangulation)
-    parallel_stereo --nodes-list=../nodelist.lis -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+    parallel_stereo -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
     
     cd ../
     echo "Finished parallel_stereo on "$i" at "$(date)
