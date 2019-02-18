@@ -2,14 +2,14 @@
 
 # Preprocessing script meant to be run as part of a CTX Ames Stereo Pipeline workflow.
 # This script uses USGS ISIS3 routines to transform CTX EDRs into Level 1 products with the even/odd detector correction applied (hence "lev1eo"),
-#   making them suitable for processing in ASP using the asp_ctx_map2dem.sh script
+# making them suitable for later processing in ASP.
 # This can also be used as a general processor for CTX EDRs because it doesn't call any ASP routines.
 
 # Requires GNU parallel
 
 # INPUT NOTES: 
 #  A textfile named productIDs.lis that contains the CTX product IDs to be processed.
-#  The Product IDs of the stereopairs SHOULD be listed sequentially if you plan on using the file as input to later UChicago ASP script components, i.e.
+#  The Product IDs of the stereopairs SHOULD be listed sequentially if you plan on using the file as input to later ASP script components, i.e.
 #   Pair1_Left
 #   Pair1_Right
 #   Pair2_Left
@@ -32,20 +32,19 @@ echo " "
 ### Check for sane commandline arguments
 
 if [[ "$#" -eq 0 ]] || [[ "$1" != "-"* ]]; then
-# print usage message and exit
-print_usage
-exit 0
+   print_usage
+   exit 0
 
 elif [[ "$#" -gt 3 ]]; then
-    echo "Error: Too Many Arguments"
-    print_usage
-    exit 1
+   echo "Error: Too Many Arguments"
+   print_usage
+   exit 1
 
-   # Else use getopts to parse flags that may have been set
+# Else use getopts to parse flags that may have been set
 elif  [[ "$1" = "-"* ]]; then
-    while getopts ":p:n" opt; do
-	case $opt in
-	    p)
+   while getopts ":p:n" opt; do
+      case $opt in
+         p)
 		prods=$OPTARG
 		if [ ! -e "$prods" ]; then
         	    echo ${prods}" not found" >&2
@@ -73,21 +72,18 @@ elif  [[ "$1" = "-"* ]]; then
         esac
     done
 else
-    print_usage
-    exit 1
+   print_usage
+   exit 1
 fi 
 
-
-    # Check that ISIS has been initialized by looking for pds2isis,
-    #  if not, initialize it
+    # Check that ISIS has been initialized by looking for pds2isis. If not, initialize it
     if [[ $(which pds2isis) = "" ]]; then
-        echo "Initializing ISIS3"
-        source $ISISROOT/scripts/isis3Startup.sh
-    # Quick test to make sure that initialization worked
-    # If not, print an error and exit
+       echo "Initializing ISIS3"
+       source $ISISROOT/scripts/isis3Startup.sh
+       # Quick test to make sure that initialization worked. If not, print an error and exit
        if [[ $(which pds2isis) = "" ]]; then
-           echo "ERROR: Failed to initialize ISIS3" 1>&2
-           exit 1
+          echo "ERROR: Failed to initialize ISIS3" 1>&2
+          exit 1
        fi
     fi
 
@@ -104,34 +100,32 @@ fi
     #  the product was downloaded from the PDS Imaging Node or the Geoscience Node
     # In the if/then/else block below, we privilege the .IMG suffix in order to make sure we only process
     #  a given product once, even if multiple instances exist, but the choice of suffix is arbitrary
-    #   If a product is missing or empty, throw a warning, unset that particular Product ID from the array
-    #    but continue to execute the script
+    # If a product is missing or empty, throw a warning, unset that particular Product ID from the array
+    #  but continue to execute the script
     for ((i = 0; i <= max_index; i++)); do
-	
-      if [[ -e ${prodarr[$i]}.IMG ]]; then
-         edrarr[$i]="${prodarr[$i]}.IMG"	
-      elif [[ -e ${prodarr[$i]}.img ]]; then
-         edrarr[$i]="${prodarr[$i]}.img"
-      else
-      	echo "Warning: "${prodarr[$i]}" EDR Not Found and will Be Skipped" 1>&2
-	unset -v 'prodarr[$i]'
-      fi
-      
+       if [[ -e ${prodarr[$i]}.IMG ]]; then
+          edrarr[$i]="${prodarr[$i]}.IMG"	
+       elif [[ -e ${prodarr[$i]}.img ]]; then
+          edrarr[$i]="${prodarr[$i]}.img"
+       else
+      	  echo "Warning: "${prodarr[$i]}" EDR Not Found and will Be Skipped" 1>&2
+	  unset -v 'prodarr[$i]'
+       fi
     done
     # Force recalculation of array indices to remove gaps in case we have made the array sparse
     prodarr=("${prodarr[@]}")
     edrarr=("${edrarr[@]}")
 
 
-echo "Start ctxedr2lev1eo.sh "$(date)
+echo "Start 1_ctxedr2lev1eo.sh "$(date)
 ## ISIS Processing
-#Ingest CTX EDRs into ISIS using mroctx2isis
+# Ingest CTX EDRs into ISIS using mroctx2isis
 echo "${edrarr[@]}" | tr ' ' '\n' | parallel --joblog mroctx2isis.log mroctx2isis from={} to={.}.cub
 
-#Add SPICE data using spiceinit
+# Add SPICE data using spiceinit
 parallel --joblog spiceinit.log spiceinit from={}.cub ::: ${prodarr[@]} 
 
-#Apply spicefit as appropriate based on input flag
+# Apply spicefit as appropriate based on input flag
 if [[ "$n" -eq 1 ]]; then
    echo "WARNING: spicefit has been deactivated" 1>&2 
 else
@@ -139,23 +133,27 @@ else
    parallel --joblog spicefit.log spicefit from={}.cub ::: ${prodarr[@]}  
 fi
 
-#Apply photometric calibration using ctxcal
+# Apply CTX photometric calibration using ctxcal
 parallel --joblog ctxcal.log ctxcal from={}.cub to={}.lev1.cub ::: ${prodarr[@]}
 
-#Apply CTX even/odd detector correction, ctxevenodd
+# Apply CTX even/odd detector correction using ctxevenodd
 parallel --joblog ctxevenodd.log ctxevenodd from={}.lev1.cub to={}.lev1eo.cub ::: ${prodarr[@]}
 
-    # Delete intermediate files
-    # Admittedly, using a FOR loop makes this slower than it could be but it's safer than using globs and minimizes error output clutter
-   ((n_elements=${#edrarr[@]}, max_index=n_elements - 1))
+# Delete intermediate files
+# Admittedly, using a FOR loop makes this slower than it could be but it's safer than using globs and minimizes error output clutter
+    ((n_elements=${#edrarr[@]}, max_index=n_elements - 1))
     for ((i = 0; i <= max_index; i++)); do
-	if [[ -e ${prodarr[$i]}.cub ]]; then
-	 rm ${prodarr[$i]}.cub	
-	fi
+       if [[ -e ${prodarr[$i]}.cub ]]; then
+	  rm ${prodarr[$i]}.cub	
+       fi
 
-	if [[ -e ${prodarr[$i]}.lev1.cub ]]; then
-	 rm ${prodarr[$i]}.lev1.cub	
-	fi
+       if [[ -e ${prodarr[$i]}.lev1.cub ]]; then
+	  rm ${prodarr[$i]}.lev1.cub	
+       fi
     done
 
 echo "Finished ctxedr2lev1eo.sh "$(date)
+
+# TODO
+# cleaner work folder, leave only files that are absolutely necessary
+# nicer parallel stdout

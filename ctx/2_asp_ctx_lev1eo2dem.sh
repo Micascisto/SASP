@@ -1,23 +1,19 @@
 #!/bin/bash
 
-# Summary:
-# Script to take Level 1eo CTX stereopairs, run them through NASA Ames stereo Pipeline.
-# The script uses ASP's bundle_adjust tool to perform bundle adjustment on each stereopair separately.
-# The script also runs ASP's cam2map4stereo.py on the input cubes, but the resulting map-projected cubes are only used as a convenient source of ideal projection information;
-#  they're not actually used for stereo matching.  (This is a legacy of a much earlier version of the code and now is merely a lazy workaround for generating sensible map projection
-#  information that is used later. This should really be done with a few calls to ISIS3's `camrange`. )
-# This script is capable of processing many stereopairs in a single run and uses GNU parallel
-#  to improve the efficiency of the processing and reduce total wall time.  
-
+# Script to take Level 1eo CTX stereopairs and run them through NASA Ames stereo Pipeline.
+# Uses ASP's bundle_adjust tool to perform bundle adjustment on each stereopair separately.
+# Runs ASP's cam2map4stereo.py on the input cubes, but the resulting map-projected cubes are only used as a convenient source of ideal projection information;
+#  they're not actually used for stereo matching.  (This is a legacy of a much earlier version of the code and now is merely a lazy workaround for generating sensible map projection information that is used later. This should really be done with a few calls to ISIS3's `camrange`. )
+# This script is capable of processing many stereopairs in a single run and uses GNU parallel to improve the efficiency of the processing and reduce total wall time.  
 
 # Dependencies:
-#      NASA Ames Stereo Pipeline
-#      USGS ISIS3
-#      GDAL
-#      GNU parallel
+#   NASA Ames Stereo Pipeline
+#   USGS ISIS3
+#   GDAL
+#   GNU parallel
 # Optional dependency:
-#      Dan's GDAL Scripts https://github.com/gina-alaska/dans-gdal-scripts
-#        (used to generate footprint shapefile based on initial DEM)
+#   Dan's GDAL Scripts https://github.com/gina-alaska/dans-gdal-scripts
+#   (used to generate footprint shapefile based on initial DEM)
 
 
 # Just a simple function to print a usage message
@@ -148,10 +144,8 @@ awk '{print("mv "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
 # If this script is run as part of a job on a computing cluster using SLURM, we write the nodelist to a file named "nodelist.lis" so parallel_stereo can use it
 # This line is NOT portable to environments that are NOT running SLURM
 # scontrol show hostname $SLURM_NODELIST | tr ' ' '\n' > nodelist.lis
-#######################################################
 
     
-######
 ## Use GNU parallel to run many instances of cam2map4stereo.py at once and project the images of each stereopair into a common projection
 # Define a function that GNU parallel will call to run cam2map4stereo.py
 function cam2map4stereo() {
@@ -191,7 +185,6 @@ for i in $( cat stereodirs.lis ); do
     # stop parallel_stereo after correlation
     parallel_stereo --stop-point 2 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
-    # attempt to optimize parallel_stereo for running on 16-core machines for Steps 2 (refinement) and 3 (filtering)
     # Users should customize the number of processors, threads for multiprocessing and threads for single processing to values that suit their hardware
     parallel_stereo --processes 2 --threads-multiprocess 4 --threads-singleprocess 4 --entry-point 2 --stop-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 

@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Summary:
-# For a series of stereopairs, create a low-resolution DEM (100 m/px with 50 px hole-filling) from a bundle_adjust'd point cloud created by asp_ctx_lev1eo2dem.sh and
+# For a series of stereopairs, create a low-resolution DEM (100 m/px with 50 px hole-filling) from a bundle_adjust'd point cloud created by 2_asp_ctx_lev1eo2dem.sh and
 #  mapproject the Level 1eo images onto it. Then run the map-projected images through parallel_stereo.
 # The purpose of this is to combine the benefits of bundle_adjust with those of proving ASP with map-projected images. This 2-step approach is meant to help remove some of the
 #  spurious jagged edges that can appear on steep slopes in DEMs made from un-projected images.
@@ -11,13 +10,13 @@
 
 
 # Dependencies:
-#      NASA Ames Stereo Pipeline
-#      USGS ISIS3
-#      GDAL
-#      GNU parallel
+#   NASA Ames Stereo Pipeline
+#   USGS ISIS3
+#   GDAL
+#   GNU parallel
 # Optional dependency:
-#      Dan's GDAL Scripts https://github.com/gina-alaska/dans-gdal-scripts
-#        (used to generate footprint shapefile based on initial DEM)
+#   Dan's GDAL Scripts https://github.com/gina-alaska/dans-gdal-scripts
+#    (used to generate footprint shapefile based on initial DEM)
 
 
 # Just a simple function to print a usage message
@@ -120,8 +119,6 @@ awk '{print $1" "$2 >$3"/stereopair.lis"}' stereopairs.lis
 # If this script is run as part of a job on Midway, we write the nodelist to a file named "nodelist.lis" so parallel_stereo can use it
 # This line is NOT portable to environments that are NOT running SLURM
 # scontrol show hostname $SLURM_NODELIST | tr ' ' '\n' > nodelist.lis
-#######################################################
-
 
 
 # Create low-resolution DEMs from point clouds created during earlier run
@@ -147,25 +144,23 @@ done
 
 ##   Start the big bad FOR loop to mapproject the bundle_adjust'd images onto the corresponding low-res DEM and pass to parallel_stereo
 for i in $( cat stereodirs.lis ); do
-
-    cd $i
+   cd $i
     
-# Store the complete path to the DEM we will use as the basis of the map projection step in a variable called $refdem
-refdem=${PWD}/results_ba/dem/${i}_ba_100_fill50-DEM.tif
+   # Store the complete path to the DEM we will use as the basis of the map projection step in a variable called $refdem
+   refdem=${PWD}/results_ba/dem/${i}_ba_100_fill50-DEM.tif
 
-# If the specified DEM does not exist or does not have nonzero size, throw an error and immediately continue to the next iteration of the FOR loop.
-if [ ! -s "$refdem" ]; then
-    echo "The specified DEM does not exist or has zero size"
-    echo $refdem
-    cd ../
-    continue
-fi
+   # If the specified DEM does not exist or does not have nonzero size, throw an error and immediately continue to the next iteration of the FOR loop.
+   if [ ! -s "$refdem" ]; then
+      echo "The specified DEM does not exist or has zero size"
+      echo $refdem
+      cd ../
+      continue
+   fi
+   # Store the names of the Level1 EO cubes in variables
+   Lcam=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
+   Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
 
-    # Store the names of the Level1 EO cubes in variables
-    Lcam=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
-    Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
-
-   # ## Mapproject the CTX images against a specific DTM using the adjusted camera information
+   # Mapproject the CTX images against a specific DTM using the adjusted camera information
    echo "Projecting "$Lcam" against "$refdem
    awk -v refdem=$refdem -v L=$Lcam '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
    echo "Projecting "$Rcam" against "$refdem
@@ -176,23 +171,23 @@ fi
    Rmap=$(awk '{print($2".ba.map.tif")}' stereopair.lis)
 
     
-    # Note that we specify ../nodelist.lis as the file containing the list of hostnames for `parallel_stereo` to use
-    # You may wish to edit out the --nodes-list argument if running this script in a non-SLURM environment
-    # See the ASP manual for information on running `parallel_stereo` with a node list argument that is suitable for your environment
+   # Note that we specify ../nodelist.lis as the file containing the list of hostnames for `parallel_stereo` to use
+   # You may wish to edit out the --nodes-list argument if running this script in a non-SLURM environment
+   # See the ASP manual for information on running `parallel_stereo` with a node list argument that is suitable for your environment
 
-    echo "Begin parallel_stereo on "$i" at "$(date)
+   echo "Begin parallel_stereo on "$i" at "$(date)
     
-    # stop parallel_stereo after correlation
-    parallel_stereo -t isis --stop-point 2 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+   # stop parallel_stereo after correlation
+   parallel_stereo -t isis --stop-point 2 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
 
-    # attempt to optimize parallel_stereo for running on the sandyb nodes (16 cores each) for Steps 2 (refinement) and 3 (filtering)
-    parallel_stereo -t isis --processes 2 --threads-multiprocess 4 --threads-singleprocess 4 --entry-point 2 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+   # attempt to optimize parallel_stereo for running on the sandyb nodes (16 cores each) for Steps 2 (refinement) and 3 (filtering)
+   parallel_stereo -t isis --processes 2 --threads-multiprocess 4 --threads-singleprocess 4 --entry-point 2 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
 
-    # finish parallel_stereo using default options for Stage 4 (Triangulation)
-    parallel_stereo -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+   # finish parallel_stereo using default options for Stage 4 (Triangulation)
+   parallel_stereo -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
     
-    cd ../
-    echo "Finished parallel_stereo on "$i" at "$(date)
+   cd ../
+   echo "Finished parallel_stereo on "$i" at "$(date)
 done
 
 

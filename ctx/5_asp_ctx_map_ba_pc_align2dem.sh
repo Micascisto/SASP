@@ -113,3 +113,6 @@ for i in $( cat ${dirs} ); do
 done
 echo "All done."
 date
+
+#TODO
+# add default maximum displacement, e.g. Tim's 2000 m
