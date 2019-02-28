@@ -30,7 +30,7 @@ if [[ $# = 0 ]] || [[ "$1" != "-"* ]] ; then
 
 # Use getopts to parse arguments/flags
 elif  [[ "$1" = "-"* ]]; then
-	while getopts ":d:m:" opt; do
+	while getopts ":d:m:c:" opt; do
 		case $opt in
 			d)
 				if [ ! -e "$OPTARG" ]; then
@@ -87,23 +87,27 @@ for i in $( cat ${dirs} ); do
 	echo Working on $i
 	cd $i
 
-	# extract the proj4 string from one of the map-projected image cubes and store it
-	proj=$(awk '{print("gdalsrsinfo -o proj4 "$1".map.cub")}' stereopair.lis | sh | sed 's/'\''//g')
-	#proj=$(echo \"${proj}\") #TODO: Are "" necessary?? If so, do it in a nicer way
+	# TODO: read projection from config file. SInusoidal works for most sistuations.
+	proj="+proj=sinu +lon_0=128.06384602687 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
     
 	# Move down into the results directory for stereopair $i
 	cd ./results_map_ba
 
 	# run pc_align and send the output to a new subdirectory called dem_align
 	echo "Running pc_align..."
-   pc_align --threads ${cpus} --num-iterations 2000 --max-displacement $maxd --highest-accuracy --datum D_MARS --save-inv-transformed-reference-points ${i}_map_ba-PC.tif ../${i}_pedr4align.csv -o dem_align/${i}_map_ba_align
+   pc_align --threads ${cpus} --num-iterations 2000 --max-displacement $maxd --highest-accuracy --datum D_MARS --save-inv-transformed-reference-points ${i}_map_ba-PC.tif ../${i}_pedr.csv -o dem_align/${i}_map_ba_align
     
    # move down into the directory with the pc_align output, which should be called "dem_align"
    cd ./dem_align
 
+   echo "Now inside: "
+   echo
+   pwd
+   echo
+
    # Create 24 m/px DEM, no hole filling, plus errorimage and normalized DEM for debugging
    echo "Running point2dem..."
-   point2dem --threads ${cpus} --t_srs ${proj} -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
+   point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
 
    # Run dem_geoid on the aligned 24 m/px DEM so that the elevation values are comparable to MOLA products
    echo "Running dem_geoid..."
@@ -115,7 +119,7 @@ for i in $( cat ${dirs} ); do
     
    # Create 6 m/px ortho, no hole-filling, no DEM
    echo "Generating orthoimage..."
-   point2dem --threads ${cpus} --t_srs ${proj} -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6
+   point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6
     
    echo "Done with ${i}_ba"
    # Move back up to the root of the stereo project   

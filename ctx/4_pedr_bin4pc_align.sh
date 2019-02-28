@@ -163,6 +163,8 @@ proj $projstr $inputTAB | sed 's/\t/,/g' | awk -F, '{print($5","$4","$3","$1","$
 # export the function so GNU Parallel can use it
 export -f parallel_pedr_bin4pc_align
 
+echo "DIOCAGNAZZO"
+
 # Call the function
 awk -v pedrlist=$pedr_list '{print($0" "pedrlist)}' stereopairs.lis | parallel --joblog parallel_pedr_bin4pc_align.log --colsep ' ' parallel_pedr_bin4pc_align
 
