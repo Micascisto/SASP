@@ -19,108 +19,107 @@
 
 # Just a simple function to print a usage message
 print_usage (){
-echo ""
-echo "Usage: $(basename $0) -p <productIDs.lis>  [-n]"
-echo " Where <productIDs.lis> is a file containing a list of the IDs of the CTX products to be processed."
-echo " Product IDs belonging to a stereopair must be listed sequentially."
-echo " The script will search for CTX EDRs in the current directory before processing with ISIS."
-echo " "
-echo " Use of the optional -n flag will skip running spicefit."
-echo " "
+	echo ""
+	echo "Usage: $(basename $0) -p <productIDs.lis> -n -w"
+	echo "<productIDs.lis> is a file containing a list of the IDs of the CTX products to be processed"
+	echo "Optional: -n flag will skip running spicefit"
+	echo "Optional: -w sets the usage of spiceweb, in case ISIS3 kernels need to be downloaded"
+	echo
+	echo "-> Product IDs belonging to a stereopair must be listed sequentially."
+	echo "-> The script will search for CTX EDRs in the current directory before processing with ISIS."
 }
 
+
 ### Check for sane commandline arguments
-
 if [[ "$#" -eq 0 ]] || [[ "$1" != "-"* ]]; then
-   print_usage
-   exit 0
+	print_usage
+	exit 0
 
-elif [[ "$#" -gt 3 ]]; then
-   echo "Error: Too Many Arguments"
-   print_usage
-   exit 1
+elif [[ "$#" -gt 5 ]]; then
+	echo "Error: Too Many Arguments"
+	print_usage
+	exit 1
 
-# Else use getopts to parse flags that may have been set
+# Use getopts to parse flags that may have been set
 elif  [[ "$1" = "-"* ]]; then
-   while getopts ":p:n" opt; do
-      case $opt in
-         p)
-		prods=$OPTARG
-		if [ ! -e "$prods" ]; then
-        	    echo ${prods}" not found" >&2
-                    # print usage message and exit
-                    print_usage
-        	    exit 1
-                fi
-                # Export $prods
-                export prods=$OPTARG    
-		
-		;;
-	    n)
-		n=1
-		;;
-            w)
-               spiceweb="web=yes"
-	   \?)
-                # Error to stop the script if an invalid option is passed
-                echo "Invalid option: -$OPTARG" >&2
-                exit 1
-                ;;
-            :)
-                # Error to prevent script from continuing if flag is not followed by at least 1 argument
-                echo "Option -$OPTARG requires an argument." >&2
-                exit 1
-                ;;
-        esac
-    done
+	while getopts ":p:n:w" opt; do
+		case $opt in
+			p)
+				prods=$OPTARG
+				if [ ! -e "$prods" ]; then
+					echo ${prods}" not found" >&2
+					print_usage
+					exit 1
+				fi
+				export prods=$OPTARG    
+				;;
+			n)
+				n=1
+				;;
+			w)
+				spiceweb="web=yes"
+				;;	
+			\?)
+				# Error to stop the script if an invalid option is passed
+				echo "Invalid option: -$OPTARG" >&2
+				exit 1
+				;;
+			:)
+				# Error to prevent script from continuing if flag is not followed by at least 1 argument
+				echo "Option -$OPTARG requires an argument." >&2
+				exit 1
+				;;
+		esac
+	done
 else
-   print_usage
-   exit 1
+	print_usage
+	exit 1
 fi 
 
-    # Check that ISIS has been initialized by looking for pds2isis. If not, initialize it
-    if [[ $(which pds2isis) = "" ]]; then
-       echo "Initializing ISIS3"
-       source $ISISROOT/scripts/isis3Startup.sh
-       # Quick test to make sure that initialization worked. If not, print an error and exit
-       if [[ $(which pds2isis) = "" ]]; then
-          echo "ERROR: Failed to initialize ISIS3" 1>&2
-          exit 1
-       fi
-    fi
+
+# Check that ISIS has been initialized by looking for pds2isis. If not, initialize it
+if [[ $(which pds2isis) = "" ]]; then
+	echo "Initializing ISIS3"
+	source $ISISROOT/scripts/isis3Startup.sh
+	# Quick test to make sure that initialization worked. If not, print an error and exit
+	if [[ $(which pds2isis) = "" ]]; then
+		echo "ERROR: Failed to initialize ISIS3" 1>&2
+		exit 1
+	fi
+fi
 
 
-    
-    # Store the ProductIDs in an indexed array
-    prodarr=($(cat $prods))
-    # Calculate the number of elements in the array and set the max index to be 1 less than this
-    # We will need these values to index a FOR loop in a moment
-    ((n_elements=${#prodarr[@]}, max_index=n_elements - 1))
+# Store the ProductIDs in an indexed array
+prodarr=($(cat $prods))
+# Calculate the number of elements in the array and set the max index to be 1 less than this
+# We will need these values to index a FOR loop in a moment
+((n_elements=${#prodarr[@]}, max_index=n_elements - 1))
 
-    # Walk through the array and test that files corresponding to the ProductIDs in productIDs.lis exist
-    # For CTX, EDRs should have a filename <productID>.[IMG|.img], where the suffix depends on whether
-    #  the product was downloaded from the PDS Imaging Node or the Geoscience Node
-    # In the if/then/else block below, we privilege the .IMG suffix in order to make sure we only process
-    #  a given product once, even if multiple instances exist, but the choice of suffix is arbitrary
-    # If a product is missing or empty, throw a warning, unset that particular Product ID from the array
-    #  but continue to execute the script
-    for ((i = 0; i <= max_index; i++)); do
-       if [[ -e ${prodarr[$i]}.IMG ]]; then
-          edrarr[$i]="${prodarr[$i]}.IMG"	
-       elif [[ -e ${prodarr[$i]}.img ]]; then
-          edrarr[$i]="${prodarr[$i]}.img"
-       else
-      	  echo "Warning: "${prodarr[$i]}" EDR Not Found and will Be Skipped" 1>&2
-	  unset -v 'prodarr[$i]'
-       fi
-    done
-    # Force recalculation of array indices to remove gaps in case we have made the array sparse
-    prodarr=("${prodarr[@]}")
-    edrarr=("${edrarr[@]}")
+# Walk through the array and test that files corresponding to the ProductIDs in productIDs.lis exist
+# For CTX, EDRs should have a filename <productID>.[IMG|.img], where the suffix depends on whether
+#  the product was downloaded from the PDS Imaging Node or the Geoscience Node
+# In the if/then/else block below, we privilege the .IMG suffix in order to make sure we only process
+#  a given product once, even if multiple instances exist, but the choice of suffix is arbitrary
+# If a product is missing or empty, throw a warning, unset that particular Product ID from the array
+#  but continue to execute the script
+for ((i = 0; i <= max_index; i++)); do
+	if [[ -e ${prodarr[$i]}.IMG ]]; then
+		edrarr[$i]="${prodarr[$i]}.IMG"	
+	elif [[ -e ${prodarr[$i]}.img ]]; then
+		edrarr[$i]="${prodarr[$i]}.img"
+	else
+		echo "Warning: "${prodarr[$i]}" EDR Not Found and will Be Skipped" 1>&2
+		unset -v 'prodarr[$i]'
+	fi
+done
+# Force recalculation of array indices to remove gaps in case we have made the array sparse
+prodarr=("${prodarr[@]}")
+edrarr=("${edrarr[@]}")
 
 
-echo "Start 1_ctxedr2lev1eo.sh "$(date)
 ## ISIS Processing
+echo "Start 1_ctxedr2lev1eo.sh "$(date)
+
 # Ingest CTX EDRs into ISIS using mroctx2isis
 echo "${edrarr[@]}" | tr ' ' '\n' | parallel --joblog mroctx2isis.log mroctx2isis from={} to={.}.cub
 
@@ -143,18 +142,17 @@ parallel --joblog ctxevenodd.log ctxevenodd from={}.lev1.cub to={}.lev1eo.cub ::
 
 # Delete intermediate files
 # Admittedly, using a FOR loop makes this slower than it could be but it's safer than using globs and minimizes error output clutter
-    ((n_elements=${#edrarr[@]}, max_index=n_elements - 1))
-    for ((i = 0; i <= max_index; i++)); do
-       if [[ -e ${prodarr[$i]}.cub ]]; then
-	  rm ${prodarr[$i]}.cub	
-       fi
+((n_elements=${#edrarr[@]}, max_index=n_elements - 1))
+for ((i = 0; i <= max_index; i++)); do
+	if [[ -e ${prodarr[$i]}.cub ]]; then
+		rm ${prodarr[$i]}.cub	
+	fi
+	if [[ -e ${prodarr[$i]}.lev1.cub ]]; then
+		rm ${prodarr[$i]}.lev1.cub	
+	fi
+done
 
-       if [[ -e ${prodarr[$i]}.lev1.cub ]]; then
-	  rm ${prodarr[$i]}.lev1.cub	
-       fi
-    done
-
-echo "Finished ctxedr2lev1eo.sh "$(date)
+echo "Finished 1_ctxedr2lev1eo.sh "$(date)
 
 # TODO
 # cleaner work folder, leave only files that are absolutely necessary
