@@ -121,27 +121,6 @@ awk '{print $1" "$2 >$3"/stereopair.lis"}' stereopairs.lis
 # scontrol show hostname $SLURM_NODELIST | tr ' ' '\n' > nodelist.lis
 
 
-# Create low-resolution DEMs from point clouds created during earlier run
-# loop through the directories listed in stereodirs.lis and run point2dem, image footprint and hillshade generation
-for i in $( cat stereodirs.lis ); do
-    # cd into the directory containing the stereopair i
-    cd $i
-    
-    # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
-    proj=$(awk '{print("gdalsrsinfo -o proj4 "$1".map.cub")}' stereopair.lis | sh | sed 's/'\''//g')
-    
-    # cd into the results directory for stereopair $i
-    cd results_ba/	       
-    # run point2dem to create 100 m/px DEM with 50 px hole-filling
-    echo point2dem --threads 16 --t_srs \"${proj}\" -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
-   
-    # Generate hillshade (useful for getting feel for textural quality of the DEM)
-    gdaldem hillshade ./dem/${i}_ba_100_fill50-DEM.tif ./dem/${i}_ba_100_fill50-hillshade.tif
-    cd ../../
-done
-
-
-
 ##   Start the big bad FOR loop to mapproject the bundle_adjust'd images onto the corresponding low-res DEM and pass to parallel_stereo
 for i in $( cat stereodirs.lis ); do
    cd $i

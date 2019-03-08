@@ -54,12 +54,12 @@ elif  [[ "$1" = "-"* ]]; then
 				;;
 			c)
 				# Test that the argument accompanying c is a positive integer
-	      	if ! test "$OPTARG" -gt 0 2> /dev/null ; then
+	      		if ! test "$OPTARG" -gt 0 2> /dev/null ; then
 	        		echo "ERROR: $OPTARG not a valid argument"
-	            echo "The number of CPUs must be a positive integer"
-	            print_usage
-	        	   exit 1
-	      	else
+	            	echo "The number of CPUs must be a positive integer"
+	            	print_usage
+	        		exit 1
+	      		else
 					cpus=$OPTARG
 				fi
 				;;				
@@ -82,13 +82,13 @@ fi
 
 ## Release the Kraken!
 
-echo "Start 5_asp_ctx_map_ba_pc_align2dem_sn.sh "$(date)
+echo "Start 5_asp_ctx_map_ba_pc_align2dem_sn.sh @ "$(date)
 # loop through the directories listed in "stereodirs.lis" and run pc_align, point2dem, dem_geoid, etc.
 for i in $( cat ${dirs} ); do
 	echo Working on $i
 	cd $i
 
-	# TODO: read projection from config file. SInusoidal works for most sistuations.
+	# TODO: read projection from config file. Sinusoidal works for most sistuations -> MAYBE NOT!!!
 	proj="+proj=sinu +lon_0=128.06384602687 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
     
 	# Move down into the results directory for stereopair $i
@@ -96,38 +96,37 @@ for i in $( cat ${dirs} ); do
 
 	# run pc_align and send the output to a new subdirectory called dem_align
 	echo "Running pc_align..."
-   pc_align --threads ${cpus} --num-iterations 2000 --max-displacement $maxd --highest-accuracy --datum D_MARS --save-inv-transformed-reference-points ${i}_map_ba-PC.tif ../${i}_pedr.csv -o dem_align/${i}_map_ba_align
+	pc_align --threads ${cpus} --num-iterations 2000 --max-displacement $maxd --highest-accuracy --datum D_MARS --save-inv-transformed-reference-points ${i}_map_ba-PC.tif ../${i}_pedr.csv -o dem_align/${i}_map_ba_align
     
-   # move down into the directory with the pc_align output, which should be called "dem_align"
-   cd ./dem_align
+	# move down into the directory with the pc_align output, which should be called "dem_align"
+	cd ./dem_align
 
-   echo "Now inside: "
-   echo
-   pwd
-   echo
+	echo "Now inside: "
+	echo
+	pwd
+	echo
 
-   # Create 24 m/px DEM, no hole filling, plus errorimage and normalized DEM for debugging
-   echo "Running point2dem..."
-   point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
+	# Create 24 m/px DEM, no hole filling, plus errorimage and normalized DEM for debugging
+	echo "Running point2dem..."
+	point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
 
-   # Run dem_geoid on the aligned 24 m/px DEM so that the elevation values are comparable to MOLA products
-   echo "Running dem_geoid..."
-   dem_geoid --threads ${cpus} ${i}_map_ba_align_24-DEM.tif -o ${i}_map_ba_align_24-DEM
+	# Run dem_geoid on the aligned 24 m/px DEM so that the elevation values are comparable to MOLA products
+	echo "Running dem_geoid..."
+	dem_geoid --threads ${cpus} ${i}_map_ba_align_24-DEM.tif -o ${i}_map_ba_align_24-DEM
     
-   # Create hillshade for 24 m/px DEM
-   echo "Generating hillshade with gdaldem"
-   gdaldem hillshade ${i}_map_ba_align_24-DEM.tif ${i}_map_ba_align_24-hillshade.tif
+	# Create hillshade for 24 m/px DEM
+	echo "Generating hillshade with gdaldem"
+	gdaldem hillshade ${i}_map_ba_align_24-DEM.tif ${i}_map_ba_align_24-hillshade.tif
     
-   # Create 6 m/px ortho, no hole-filling, no DEM
-   echo "Generating orthoimage..."
-   point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6
+	# Create 6 m/px orthoimage, no hole-filling, no DEM
+	echo "Generating orthoimage..."
+	point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6
     
-   echo "Done with ${i}_ba"
-   # Move back up to the root of the stereo project   
-   cd ../../../
+	echo "Done with ${i}_ba"
+	# Move back up to the root of the stereo project   
+	cd ../../../
 done
-echo "All done."
-date
+echo "Finished 5_asp_ctx_map_ba_pc_align2dem_sn.sh @ "$(date)
 
 #TODO
 # add default maximum displacement, e.g. Tim's 2000 m

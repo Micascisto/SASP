@@ -166,5 +166,4 @@ mv *.IMG orig_IMGs
 echo "Finished 1_ctxedr2lev1eo.sh @ "$(date)
 
 # TODO
-# cleaner work folder, leave only files that are absolutely necessary
 # nicer parallel stdout
