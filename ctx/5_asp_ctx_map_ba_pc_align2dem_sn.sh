@@ -17,7 +17,7 @@ print_usage (){
 	echo "Usage: $(basename $0) -d <stereodirs.lis> -m <max-displacement> -c <number-CPU>"
 	echo "<stereodirs.lis> is a file containing the name of the subdirectories to loop over, 1 per line"
 	echo "<max-displacement> is the maximum displacement to pass to pc_align"
-	echo "<number-CPU> is the number of CPU cores to be used"
+	echo "<number-CPU> is the number of physical CPU cores to be used"
 	echo
 	echo "-> Subdirectories containing stereopairs must all exist within the same root directory"
 	echo "-> The names listed in <stereodirs.lis> will be used as the file prefix for the output"

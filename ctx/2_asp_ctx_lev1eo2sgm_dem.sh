@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Script to take Level 1eo CTX stereopairs and run them through NASA Ames stereo Pipeline.
+# Designed to use Semi-Global Matching, make sure to set it up properly in the stereo.default file.
 # Uses ASP's bundle_adjust tool to perform bundle adjustment on each stereopair separately.
 # Runs ASP's cam2map4stereo.py on the input cubes, but the resulting map-projected cubes are only used as a convenient source of ideal projection information;
 #  they're not actually used for stereo matching.  (This is a legacy of a much earlier version of the code and now is merely a lazy workaround for generating
@@ -185,7 +186,7 @@ for i in $( cat stereodirs.lis ); do
     parallel_stereo --stop-point 1 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Run step 1, 2, 3 (Disparity Map Initialization, Sub-pixel Refinement, Outlier Rejection and HoleFilling)
-    parallel_stereo --processes ${cpus} --threads-multiprocess 2 --threads-singleprocess 1 --entry-point 1 --stop-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+    parallel_stereo --processes ${cpus} --threads-multiprocess 2 --threads-singleprocess 2 --entry-point 1 --stop-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Run step 4 (Triangulation)
     parallel_stereo --entry-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba

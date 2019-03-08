@@ -19,7 +19,7 @@
 
 # Just a simple function to print a usage message
 print_usage (){
-	echo ""
+	echo
 	echo "Usage: $(basename $0) -p <productIDs.lis> -n -w"
 	echo "<productIDs.lis> is a file containing a list of the IDs of the CTX products to be processed"
 	echo "Optional: -n flag will skip running spicefit"
@@ -118,14 +118,14 @@ edrarr=("${edrarr[@]}")
 
 
 ## ISIS Processing
-echo "Start 1_ctxedr2lev1eo.sh @ "$(date)
+echo "Start $(basename $0) @ "$(date)
 
 # Ingest CTX EDRs into ISIS using mroctx2isis
-echo "running mroctx2isis"
+echo "Running mroctx2isis"
 echo "${edrarr[@]}" | tr ' ' '\n' | parallel --joblog mroctx2isis.log mroctx2isis from={} to={.}.cub
 
 # Add SPICE data using spiceinit
-echo "running spiceinit"
+echo "Running spiceinit"
 parallel --joblog spiceinit.log spiceinit ${spiceweb} from={}.cub ::: ${prodarr[@]} 
 
 # Apply spicefit as appropriate based on input flag
@@ -133,21 +133,21 @@ if [[ "$n" -eq 1 ]]; then
    echo "WARNING: spicefit has been deactivated" 1>&2 
 else
    #Smooth SPICE using spicefit
-	echo "running spicefit"
+	echo "Running spicefit"
    parallel --joblog spicefit.log spicefit from={}.cub ::: ${prodarr[@]}  
 fi
 
 # Apply CTX photometric calibration using ctxcal
-echo "running ctxcal"
+echo "Running ctxcal"
 parallel --joblog ctxcal.log ctxcal from={}.cub to={}.lev1.cub ::: ${prodarr[@]}
 
 # Apply CTX even/odd detector correction using ctxevenodd
-echo "running ctxevenodd"
+echo "Running ctxevenodd"
 parallel --joblog ctxevenodd.log ctxevenodd from={}.lev1.cub to={}.lev1eo.cub ::: ${prodarr[@]}
 
 # Delete intermediate files
 # Admittedly, using a FOR loop makes this slower than it could be but it's safer than using globs and minimizes error output clutter
-echo "cleanup"
+echo "Final cleanup"
 ((n_elements=${#edrarr[@]}, max_index=n_elements - 1))
 for ((i = 0; i <= max_index; i++)); do
 	if [[ -e ${prodarr[$i]}.cub ]]; then
@@ -163,7 +163,7 @@ mv *.log logs/
 mkdir -p orig_IMGs
 mv *.IMG orig_IMGs
 
-echo "Finished 1_ctxedr2lev1eo.sh @ "$(date)
+echo "Finished $(basename $0) @ "$(date)
 
 # TODO
 # nicer parallel stdout
