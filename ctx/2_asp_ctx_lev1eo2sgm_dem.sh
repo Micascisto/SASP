@@ -147,7 +147,10 @@ for i in $( cat stereodirs.lis ); do
     parallel_stereo --entry-point 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     echo
-    echo "currently inside $PWD"
+    mkdir backup
+    cp *PC.tif backup/
+    ls -lath | grep PC.tif
+    ls -lath backup/
     echo
 
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
@@ -162,7 +165,7 @@ for i in $( cat stereodirs.lis ); do
     cd results_ba/
     # run point2dem to create 100 m/px DEM with 50 px hole-filling
     echo "Running point2dem..."
-    echo point2dem --threads ${cpus} ${proj} -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
+    echo point2dem --threads ${cpus} ${proj} --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"
