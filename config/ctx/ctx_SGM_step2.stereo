@@ -36,8 +36,8 @@ corr-tile-size 3072
 # Helps reduce seam artifacts at tile borders at expense of run time and memory
 sgm-collar-size 1024
 
-# Restrict memory usage per process (default = 6144)
-corr-memory-limit-mb 10240
+# Restrict memory usage in MB per process (default = 6144)
+corr-memory-limit-mb 12288
 
 # Integer Correlation / stereo_corr
 ################################################################

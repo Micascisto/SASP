@@ -1,12 +1,9 @@
 #!/bin/bash
 
 # Script to take Level 1eo CTX stereopairs and run them through NASA Ames stereo Pipeline.
-# Designed to use Semi-Global Matching, make sure to set it up properly in the stereo.default file.
 # Uses ASP's bundle_adjust tool to perform bundle adjustment on each stereopair separately.
-# Runs ASP's cam2map4stereo.py on the input cubes, but the resulting map-projected cubes are only used as a convenient source of ideal projection information;
-#  they're not actually used for stereo matching.  (This is a legacy of a much earlier version of the code and now is merely a lazy workaround for generating
-#  sensible map projection information that is used later. This should really be done with a few calls to ISIS3's `camrange`.)
-# This script is capable of processing many stereopairs in a single run and uses GNU parallel to improve the efficiency of the processing and reduce total wall time.  
+# This script is capable of processing many stereopairs in a single run and uses GNU parallel to improve the efficiency of the processing and reduce total wall time.
+# This code doesn't use projected images in stereo. It may seem counterintuitive, but seems to work better with SGM.
 
 # Dependencies:
 #   NASA Ames Stereo Pipeline
@@ -116,47 +113,9 @@ mkdir $(cat stereodirs.lis )
 # These files are used to ensure that the input images are specified in the same order during every step of `stereo` in ASP
 awk '{print $1" "$2 >$3"/stereopair.lis"}' stereopairs.lis
 
-
-# Bundle adjust *all* of the input products
-# You must modify the hard-coded bundle adjustment prefix inside the FOR loop below if you want to bundle adjust all of the input products together
-# rather than running bundle_adjust separately on each stereopair.
-# The practical difference between these two approaches is non-trivial. Consider yourself warned
-#awk '{print($1".lev1eo.cub")}' $prods | tr '\n' ' ' | tr -s ' ' | awk '{print("bundle_adjust "$0" -o ba_results/ba")}' | sh
-
-
-# TODO: Test that the Level1eo cubes exist before trying to move them, throw error and exit if they don't exist
-#prodarr=($(awk '{print $1".lev1eo.cub"}' ${prods} ))
-
-# for (( <EXPR1> ; <EXPR2> ; <EXPR3> )); do
-#   <LIST>
-# done
-# ((n_elements=${#prodarr[@]}, max_index=n_elements - 2))
-# for (( j=0 ; j <= max_index ; j+=2 )); do
-#     if [ -e ${prodarr[$j]}.lev1eo.cub ] && [ -e ${prodarr[$j+1]}.lev1eo.cub  ]; then
-#	
-#     else
-#	
-#     fi
-#
-# done
-
-
 # Move the Level 1eo cubes into the directory named for the stereopair they belong to
 awk '{print("mv "$1".lev1eo.cub "$3)}' stereopairs.lis | sh
 awk '{print("mv "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
-
-
-## Use GNU parallel to run many instances of cam2map4stereo.py at once and project the images of each stereopair into a common projection
-# Define a function that GNU parallel will call to run cam2map4stereo.py
-function cam2map4stereo() {
-    cd $3 
-    cam2map4stereo.py $1.lev1eo.cub $2.lev1eo.cub
-}
-# export the function so GNU parallel can use it
-export -f cam2map4stereo
-# Run the function using parallel
-echo "Running cam2map4stereo"
-parallel --colsep ' ' --joblog parallel_cam2map4stereo.log cam2map4stereo :::: stereopairs.lis 
 
 
 ##  Run ALL stereo in series for each stereopair using parallel_stereo. Use Semi-Global Matching settings here.
@@ -171,13 +130,9 @@ for i in $( cat stereodirs.lis ); do
     # Run ASP's bundle_adjust on the given stereopair
     echo "Running bundle_adjust"
     bundle_adjust $L $R -o adjust/ba
-    
-    # Note that we specify ../nodelist.lis as the file containing the list of hostnames for `parallel_stereo` to use
-    # You may wish to edit out the --nodes-list argument if running this script in a non-SLURM environment
-    # See the ASP manual for information on running `parallel_stereo` with a node list argument that is suitable for your environment
 
     # We break parallel_stereo into 3 stages in order to optimize resource utilization. We let parallel_stereo decide how to do this for step 0 and 4.
-    # "Most likely to gain [from parallelization] are stages 1 and 2 (correlation and refinement) which are the most computationally expensive."
+    # ASP Guide: "Most likely to gain [from parallelization] are stages 1 and 2 (correlation and refinement) which are the most computationally expensive."
     # For the second stage, we specify an optimal number of processes and number of threads (based on user input) to use for multi-process and single-process portions of the code.
 
     echo "Running parallel_stereo"
@@ -186,29 +141,25 @@ for i in $( cat stereodirs.lis ); do
     parallel_stereo --stop-point 1 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Run step 1, 2, 3 (Disparity Map Initialization, Sub-pixel Refinement, Outlier Rejection and HoleFilling)
-    parallel_stereo --processes ${cpus} --threads-multiprocess 2 --threads-singleprocess 2 --entry-point 1 --stop-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+    parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 --entry-point 1 --stop-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Run step 4 (Triangulation)
     parallel_stereo --entry-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
-    
-    cd ../
-done
 
-# Create low-resolution DEMs from point clouds just created with SGM in parallel_stereo
-# loop through the directories listed in stereodirs.lis and run point2dem, image footprint and hillshade generation
-for i in $( cat stereodirs.lis ); do
-    # cd into the directory containing the stereopair i
-    cd $i
-    
-    # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
-    proj=$(awk '{print("gdalsrsinfo -o proj4 "$1".map.cub")}' stereopair.lis | sh | sed 's/'\''//g')
-    
+    # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
+    caminfo from=$L to=P08_004073_1994_XN_19N232W.lev1eo.caminfo to=$1.caminfo
+    clon=$(grep CenterLongitude P08_004073_1994_XN_19N232W.lev1eo.caminfo | tr -dc '0-9.')
+    rm -f $1.caminfo
+    # Store projection information in a variable for point2dem. Transverse Mercator should work well for most images independently of Latitude.
+    # Oblique Mercator may work even better, but is more complicated to set up (requires more info) and probably overkill.
+    proj="--datum Mars --transverse-mercator --proj-lat ${clon}"
+
     # cd into the results directory for stereopair $i
-    cd results_ba/	       
+    cd results_ba/
     # run point2dem to create 100 m/px DEM with 50 px hole-filling
     echo "Running point2dem..."
-    echo point2dem --threads ${cpus} --t_srs \"${proj}\" -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
-   
+    echo point2dem --threads ${cpus} ${proj} -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
+
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"
     gdaldem hillshade ./dem/${i}_ba_100_fill50-DEM.tif ./dem/${i}_ba_100_fill50-hillshade.tif
