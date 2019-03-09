@@ -30,11 +30,11 @@ corr-seed-mode 1
 
 # Size of tiles used by the correlator for multi-threaded processing, must be a multiple of 16 (default = 1024)
 # Larger tile sizes produce better results but consume more memory
-corr-tile-size 2048
+corr-tile-size 3072
 
 # Size of region of additional processing around each correlation tile (default = 512)
 # Helps reduce seam artifacts at tile borders at expense of run time and memory
-sgm-collar-size 512
+sgm-collar-size 1024
 
 # Restrict memory usage per process (default = 6144)
 corr-memory-limit-mb 10240
