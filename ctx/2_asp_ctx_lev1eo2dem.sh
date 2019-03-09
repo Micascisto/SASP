@@ -149,7 +149,7 @@ awk '{print("mv "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
 # Define a function that GNU parallel will call to run cam2map4stereo.py
 function cam2map4stereo() {
     cd $3 
-    cam2map4stereo.py $1.lev1eo.cub $2.lev1eo.cub
+    cam2map4stereo.py --map=~/SASP/config/tm_test.map $1.lev1eo.cub $2.lev1eo.cub
 }
 # export the function so GNU parallel can use it
 export -f cam2map4stereo
@@ -164,17 +164,16 @@ for i in $( cat stereodirs.lis ); do
     
     cd $i
     # Store the names of the Level1 EO cubes in variables
-    L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
-    R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
+    #L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
+    #R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
+    L=$(awk '{print($1".map.cub")}' stereopair.lis)
+    R=$(awk '{print($2".map.cub")}' stereopair.lis)
+
 
     # Run ASP's bundle_adjust on the given stereopair
     echo "Running bundle_adjust"
     bundle_adjust $L $R -o adjust/ba
     
-    # Note that we specify ../nodelist.lis as the file containing the list of hostnames for `parallel_stereo` to use
-    # You may wish to edit out the --nodes-list argument if running this script in a non-SLURM environment
-    # See the ASP manual for information on running `parallel_stereo` with a node list argument that is suitable for your environment
-
     # We break parallel_stereo into 3 stages in order to optimize resource utilization. We let parallel_stereo decide how to do this for step 0 and 4.
     # "Most likely to gain [from parallelization] are stages 1 and 2 (correlation and refinement) which are the most computationally expensive."
     # For the second stage, we specify an optimal number of processes and number of threads (based on user input) to use for multi-process and single-process portions of the code.
@@ -219,3 +218,4 @@ echo "Finished $(basename $0) @ "$(date)
 # TODO
 # cleaner work folder, leave only files that are absolutely necessary
 # test and possibly optimize multithreading with Intel hyperthreading
+# Use a better projection than Sinusoidal (cam2map4stereo.py gets it from MOLA) -> Oblique Mercator might be ideal

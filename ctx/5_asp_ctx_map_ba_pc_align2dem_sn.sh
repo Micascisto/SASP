@@ -88,8 +88,8 @@ for i in $( cat ${dirs} ); do
 	echo Working on $i
 	cd $i
 
-	# TODO: read projection from config file. Sinusoidal works for most sistuations -> MAYBE NOT!!!
-	proj="+proj=sinu +lon_0=128.06384602687 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
+    # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
+	proj=$(awk '{print("gdalsrsinfo -o proj4 "$1".map.cub")}' stereopair.lis | sh | sed 's/'\''//g')
     
 	# Move down into the results directory for stereopair $i
 	cd ./results_map_ba
@@ -101,14 +101,9 @@ for i in $( cat ${dirs} ); do
 	# move down into the directory with the pc_align output, which should be called "dem_align"
 	cd ./dem_align
 
-	echo "Now inside: "
-	echo
-	pwd
-	echo
-
 	# Create 24 m/px DEM, no hole filling, plus errorimage and normalized DEM for debugging
 	echo "Running point2dem..."
-	point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
+	point2dem --threads ${cpus} --t_srs \"${proj}\" -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
 
 	# Run dem_geoid on the aligned 24 m/px DEM so that the elevation values are comparable to MOLA products
 	echo "Running dem_geoid..."
@@ -122,7 +117,6 @@ for i in $( cat ${dirs} ); do
 	echo "Generating orthoimage..."
 	point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6
     
-	echo "Done with ${i}_ba"
 	# Move back up to the root of the stereo project   
 	cd ../../../
 done
