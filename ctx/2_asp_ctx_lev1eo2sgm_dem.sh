@@ -129,7 +129,7 @@ for i in $( cat stereodirs.lis ); do
 
     # Run ASP's bundle_adjust on the given stereopair
     echo "Running bundle_adjust"
-    bundle_adjust $L $R -o adjust/ba
+    bundle_adjust ${L} ${R} -o adjust/ba
 
     # We break parallel_stereo into 3 stages in order to optimize resource utilization. We let parallel_stereo decide how to do this for step 0 and 4.
     # ASP Guide: "Most likely to gain [from parallelization] are stages 1 and 2 (correlation and refinement) which are the most computationally expensive."
@@ -138,17 +138,21 @@ for i in $( cat stereodirs.lis ); do
     echo "Running parallel_stereo"
     
     # Run step 0 (Preprocessing)
-    parallel_stereo --stop-point 1 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+    parallel_stereo --stop-point 1 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Run step 1, 2, 3 (Disparity Map Initialization, Sub-pixel Refinement, Outlier Rejection and HoleFilling)
-    parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 --entry-point 1 --stop-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+    parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 --entry-point 1 --stop-point 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Run step 4 (Triangulation)
-    parallel_stereo --entry-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+    parallel_stereo --entry-point 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+
+    echo
+    echo "currently inside $PWD"
+    echo
 
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
-    caminfo from=$L to=P08_004073_1994_XN_19N232W.lev1eo.caminfo to=${L}.caminfo
-    clon=$(grep CenterLongitude P08_004073_1994_XN_19N232W.lev1eo.caminfo | tr -dc '0-9.')
+    caminfo from=${L} to=${L}.caminfo to=${L}.caminfo
+    clon=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
     rm -f ${L}.caminfo
     # Store projection information in a variable for point2dem. Transverse Mercator should work well for most images independently of Latitude.
     # Oblique Mercator may work even better, but is more complicated to set up (requires more info) and probably overkill.

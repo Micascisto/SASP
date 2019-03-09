@@ -1,7 +1,9 @@
 # Stefano's version of USGS ASP Scripts #
 
 I modified USGS ASP Scripts and added some of my own to produce CTX, HiRISE, and HRSC (work in progress) DEMs from stereo pairs.
+
 I would like to thank USGS for providing this amazing toolset for free to the community.
+
 These scripts are currently under development, and by no means stable and guaranteed to work on every machine. If you encounter any issues, feel free to report them, I always appreciate.
 
 ## Major edits to the original USGS scripts and settings ##
