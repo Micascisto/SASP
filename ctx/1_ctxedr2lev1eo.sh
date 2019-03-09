@@ -58,6 +58,7 @@ elif  [[ "$1" = "-"* ]]; then
 				;;
 			w)
 				spiceweb="web=yes"
+				echo "SPICE web service activated. The spice must flow!"
 				;;	
 			\?)
 				# Error to stop the script if an invalid option is passed

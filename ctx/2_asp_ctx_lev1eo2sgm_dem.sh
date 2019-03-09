@@ -147,9 +147,9 @@ for i in $( cat stereodirs.lis ); do
     parallel_stereo --entry-point 4 $L $R -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
-    caminfo from=$L to=P08_004073_1994_XN_19N232W.lev1eo.caminfo to=$1.caminfo
+    caminfo from=$L to=P08_004073_1994_XN_19N232W.lev1eo.caminfo to=${L}.caminfo
     clon=$(grep CenterLongitude P08_004073_1994_XN_19N232W.lev1eo.caminfo | tr -dc '0-9.')
-    rm -f $1.caminfo
+    rm -f ${L}.caminfo
     # Store projection information in a variable for point2dem. Transverse Mercator should work well for most images independently of Latitude.
     # Oblique Mercator may work even better, but is more complicated to set up (requires more info) and probably overkill.
     proj="--datum Mars --transverse-mercator --proj-lat ${clon}"
