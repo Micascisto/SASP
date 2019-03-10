@@ -95,23 +95,6 @@ if [[ $(which pds2isis) = "" ]]; then
 fi
 
 
-## Housekeeping and Creating Some Support Files for ASP
-# Create a 3-column, space-delimited file containing list of CTX stereo product IDs and the name of the corresponding directory that will be created for each pair
-# For the sake of concision, we remove the the 2 character command mode indicator and the 1x1 degree region indicator from the directory name
-awk '{printf "%s ", $0}!(NR % 2){printf "\n"}' $prods | sed 's/ /_/g' | awk -F_ '{print($1"_"$2"_"$3"_"$4"_"$5" "$6"_"$7"_"$8"_"$9"_"$10" "$1"_"$2"_"$3"_"$6"_"$7"_"$8)}' > stereopairs.lis
-
-# Extract Column 3 (the soon-to-be- directory names) from stereopairs.lis and write it to a file called stereodirs.lis
-# This file will be specified as an input argument for asp_ctx_map2dem.sh or asp_ctx_para_map2dem.sh
-awk '{print($3)}' stereopairs.lis > stereodirs.lis
-
-# Make directories named according to the lines in stereodirs.lis
-awk '{print("mkdir "$1)}' stereodirs.lis | sh
-
-# Now extract each line from stereopairs.lis (created above) and write it to a textfile inside the corresponding subdirectory we created on the previous line
-# These files are used to ensure that the input images are specified in the same order during every step of `stereo` in ASP
-awk '{print $1" "$2 >$3"/stereopair.lis"}' stereopairs.lis
-
-
 ##   Start the big bad FOR loop to mapproject the bundle_adjust'd images onto the corresponding low-res DEM and pass to parallel_stereo
 echo "Start $(basename $0) @ "$(date)
 for i in $( cat stereodirs.lis ); do
@@ -127,11 +110,13 @@ for i in $( cat stereodirs.lis ); do
         cd ../
         continue
     fi
+
     # Store the names of the Level1 EO cubes in variables
     Lcam=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
     Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
 
     # Mapproject the CTX images against a specific DTM using the adjusted camera information
+    # TODO: use actual image resolutions instead of 6 m
     echo "Projecting "$Lcam" against "$refdem
     awk -v refdem=$refdem -v L=$Lcam '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
     echo "Projecting "$Rcam" against "$refdem
@@ -150,10 +135,10 @@ for i in $( cat stereodirs.lis ); do
     
     # cd into the results directory for stereopair $i
     cd results_map_ba/
-    # Run point2dem with orthoimage and intersection error image outputs. no hole filling
+    # Run point2dem with orthoimage and intersection error image outputs. No hole filling.
     # TODO: extract the worst resolution out of the stereopair (caminfo??) and do x3 to calculate output DEM resolution
     echo "Running point2dem..."
-    echo point2dem --threads 16 --t_srs \"${proj4}\" --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
+    echo point2dem --threads 16 --t_srs \"${proj4}\" -r mars --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"
