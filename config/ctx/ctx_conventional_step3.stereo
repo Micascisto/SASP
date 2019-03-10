@@ -26,7 +26,6 @@ alignment-method none
 prefilter-mode 2
 
 # Kernel size (1-sigma) for pre-processing
-#
 # Recommend 1.4 px for Laplacian of Gaussian
 # Recommend 25 px for Subtracted Mean
 prefilter-kernel-width 1.4
@@ -35,14 +34,13 @@ prefilter-kernel-width 1.4
 ################################################################
 
 # Select a cost function to use for initialization:
-#
 # 0 - absolute difference (fast)
 # 1 - squared difference  (faster .. but usually bad)
 # 2 - normalized cross correlation (recommended)
 cost-mode 2
 
 # Initialization step: correlation kernel size
-corr-kernel 25 25
+corr-kernel 29 29
 
 # Initializaion step: correlation window size
 # corr-search -80 -2 20 2
@@ -51,7 +49,6 @@ corr-kernel 25 25
 ################################################################
 
 # Subpixel step: subpixel modes
-#
 # 0 - disable subpixel correlation (fastest)
 # 1 - parabola fitting (draft mode - not as accurate)
 # 2 - affine adaptive window, bayes EM weighting (slower, but much more accurate)
@@ -59,7 +56,7 @@ corr-kernel 25 25
 subpixel-mode 2
 
 # Subpixel step: correlation kernel size
-subpixel-kernel 21 21
+subpixel-kernel 25 25
 
 # Post Filtering / stereo_fltr
 ################################################################
