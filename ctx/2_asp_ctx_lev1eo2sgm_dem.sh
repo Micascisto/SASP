@@ -78,7 +78,7 @@ elif  [[ "$1" = "-"* ]]; then
                 ;;
         esac
    done
-fi 
+fi
 
 # If we've made it this far, commandline args look sane and specified files exist
 # Check that ISIS has been initialized by looking for pds2isis, if not, initialize it
@@ -107,7 +107,7 @@ awk '{printf "%s ", $0}!(NR % 2){printf "\n"}' $prods | sed 's/ /_/g' | awk -F_ 
 awk '{print($3)}' stereopairs.lis > stereodirs.lis
 
 # Make directories named according to the lines in stereodirs.lis
-mkdir $(cat stereodirs.lis )
+awk '{print("mkdir "$1)}' stereodirs.lis | sh
 
 # Now extract each line from stereopairs.lis (created above) and write it to a textfile inside the corresponding subdirectory we created on the previous line
 # These files are used to ensure that the input images are specified in the same order during every step of `stereo` in ASP
@@ -122,7 +122,9 @@ awk '{print("mv "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
 # This is not the most resource efficient way of doing this but it's a hell of a lot more efficient compared to using plain `stereo` in series
 for i in $( cat stereodirs.lis ); do
     
+    # Move inside stereopair directory
     cd $i
+
     # Store the names of the Level1 EO cubes in variables
     L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
     R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
@@ -131,41 +133,35 @@ for i in $( cat stereodirs.lis ); do
     echo "Running bundle_adjust"
     bundle_adjust ${L} ${R} -o adjust/ba
 
-    # We break parallel_stereo into 3 stages in order to optimize resource utilization. We let parallel_stereo decide how to do this for step 0 and 4.
-    # ASP Guide: "Most likely to gain [from parallelization] are stages 1 and 2 (correlation and refinement) which are the most computationally expensive."
-    # For the second stage, we specify an optimal number of processes and number of threads (based on user input) to use for multi-process and single-process portions of the code.
-
+    # This was once broken into stages, but I believe it complicates things and doesn't work so well. For instance, step 4 was run with 8 threads on a 4 core machine.
     echo "Running parallel_stereo"
-    
-    # Run step 0 (Preprocessing)
-    parallel_stereo --stop-point 1 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
-
-    # Run step 1, 2, 3 (Disparity Map Initialization, Sub-pixel Refinement, Outlier Rejection and HoleFilling)
-    parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 --entry-point 1 --stop-point 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
-
-    # Run step 4 (Triangulation)
-    parallel_stereo --entry-point 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
+    parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
     echo
+    cd results_ba/
     mkdir backup
     cp *PC.tif backup/
     ls -lath | grep PC.tif
     ls -lath backup/
+    cd ..
     echo
 
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
     caminfo from=${L} to=${L}.caminfo to=${L}.caminfo
     clon=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
+    echo "DEBUG: Variable clon = "${clon}
     rm -f ${L}.caminfo
-    # Store projection information in a variable for point2dem. Transverse Mercator should work well for most images independently of Latitude.
+    # Store projection information (proj4 format) in a variable for point2dem and in a file. Transverse Mercator should work well for most images independently of Latitude.
     # Oblique Mercator may work even better, but is more complicated to set up (requires more info) and probably overkill.
-    proj="--datum Mars --transverse-mercator --proj-lat ${clon}"
+    proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3376200 +units=m +no_defs"
+    echo ${proj4} > ${i}.proj4
+    echo "DEBUG: Variable proj4 = "${proj4}
 
     # cd into the results directory for stereopair $i
     cd results_ba/
     # run point2dem to create 100 m/px DEM with 50 px hole-filling
     echo "Running point2dem..."
-    echo point2dem --threads ${cpus} ${proj} --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
+    echo point2dem --threads ${cpus} --t_srs ${proj4} -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"

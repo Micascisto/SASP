@@ -1,12 +1,9 @@
 #!/bin/bash
 
-# For a series of stereopairs, create a low-resolution DEM (100 m/px with 50 px hole-filling) from a bundle_adjust'd point cloud created by 2_asp_ctx_lev1eo2dem.sh and
-#  mapproject the Level 1eo images onto it. Then run the map-projected images through parallel_stereo.
+# Script to mapproject the Level 1eo images of a stereopair onto the low-res DEM created in the previous step. Then run the map-projected images through parallel_stereo.
 # The purpose of this is to combine the benefits of bundle_adjust with those of proving ASP with map-projected images. This 2-step approach is meant to help remove some of the
 #  spurious jagged edges that can appear on steep slopes in DEMs made from un-projected images.
-
-# This script is capable of processing many stereopairs in a single run and uses GNU parallel
-#  to improve the efficiency of the processing and reduce total wall time.  
+# This script is capable of processing many stereopairs in a single run and uses GNU parallel to improve the efficiency of the processing and reduce total wall time.  
 
 
 # Dependencies:
@@ -21,48 +18,56 @@
 
 # Just a simple function to print a usage message
 print_usage (){
-echo ""
-echo "Usage: $(basename $0) -s <stereo.default> -p <productIDs.lis>"
-echo " Where <productIDs.lis> is a file containing a list of the IDs of the CTX products to be processed."
-echo " Product IDs belonging to a stereopair must be listed sequentially."
-# echo " The script will search for CTX Level 1eo products in the current directory before processing with ASP."
-echo " "
-echo "<stereo.default> is the name and absolute path to the stereo.default file to be used by the stereo command."
+echo
+echo "Usage: $(basename $0) -s <stereo.default> -p <productIDs.lis> -c <number-CPU>"
+echo "<stereo.default> is the name and absolute path to the stereo.default file to be used by parallel_stereo"
+echo "<productIDs.lis> is a file containing a list of the IDs of the CTX products to be processed"
+echo "<number-CPU> is the number of physical CPU cores to be used"
+echo
+echo "-> These scripts are optimized to use Normalized Cross Correlation at this stage, make sure to set it up in stereo.default"
+echo "-> Product IDs belonging to a stereopair must be listed sequentially."
+# echo "-> The script will search for CTX Level 1eo products in the current directory before processing with ASP."
 }
 
 ### Check for sane commandline arguments
-
 if [[ $# = 0 ]] || [[ "$1" != "-"* ]]; then
-# print usage message and exit
-print_usage
-exit 0
+    print_usage
+    exit 0
 
-   # Else use getopts to parse flags that may have been set
+# Else use getopts to parse flags that may have been set
 elif  [[ "$1" = "-"* ]]; then
-    while getopts ":p:s:" opt; do
-	case $opt in
-	    p)
-		prods=$OPTARG
-		if [ ! -e "$OPTARG" ]; then
-        	    echo "$OPTARG not found" >&2
-                    # print usage message and exit
+    while getopts ":p:s:c:" opt; do
+        case $opt in
+            p)
+                prods=$OPTARG
+                if [ ! -e "$OPTARG" ]; then
+                    echo "$OPTARG not found" >&2
                     print_usage
-        	    exit 1
+                    exit 1
                 fi
-
-		;;
-	    s)
-		config=$OPTARG
-		if [ ! -e "$OPTARG" ]; then
-        	    echo "$OPTARG not found" >&2
-                    # print usage message and exit
+                ;;
+            s)
+                config=$OPTARG
+                if [ ! -e "$OPTARG" ]; then
+                    echo "$OPTARG not found" >&2
                     print_usage
-        	    exit 1
+                    exit 1
                 fi
-                # Export $config so that GNU parallel can use it later
                 export config=$OPTARG
-		;;
-	   \?)
+                ;;
+            c)
+				# Test that the argument accompanying c is a positive integer
+	      	    if ! test "$OPTARG" -gt 0 2> /dev/null ; then
+	        		echo "ERROR: $OPTARG not a valid argument"
+	                echo "The number of CPUs must be a positive integer"
+	                print_usage
+	        	    exit 1
+	      	    else
+				    cpus=$OPTARG
+				fi
+				;;				
+
+            \?)
                 # Error to stop the script if an invalid option is passed
                 echo "Invalid option: -$OPTARG" >&2
                 exit 1
@@ -74,33 +79,23 @@ elif  [[ "$1" = "-"* ]]; then
                 ;;
         esac
    done
-fi 
+fi
 
 # If we've made it this far, commandline args look sane and specified files exist
-
-# Check that ISIS has been initialized already
-
-    # Check that ISIS has been initialized by looking for pds2isis,
-    #  if not, initialize it
-    if [[ $(which pds2isis) = "" ]]; then
-        echo "Initializing ISIS3"
-        source $ISISROOT/scripts/isis3Startup.sh
+# Check that ISIS has been initialized by looking for pds2isis, if not, initialize it
+if [[ $(which pds2isis) = "" ]]; then
+    echo "Initializing ISIS3"
+    source $ISISROOT/scripts/isis3Startup.sh
     # Quick test to make sure that initialization worked
     # If not, print an error and exit
-       if [[ $(which pds2isis) = "" ]]; then
-           echo "ERROR: Failed to initialize ISIS3" 1>&2
-           exit 1
-       fi
+    if [[ $(which pds2isis) = "" ]]; then
+        echo "ERROR: Failed to initialize ISIS3" 1>&2
+        exit 1
     fi
-
-######
-
-    date
+fi
 
 
-#######################################################
 ## Housekeeping and Creating Some Support Files for ASP
-#######################################################
 # Create a 3-column, space-delimited file containing list of CTX stereo product IDs and the name of the corresponding directory that will be created for each pair
 # For the sake of concision, we remove the the 2 character command mode indicator and the 1x1 degree region indicator from the directory name
 awk '{printf "%s ", $0}!(NR % 2){printf "\n"}' $prods | sed 's/ /_/g' | awk -F_ '{print($1"_"$2"_"$3"_"$4"_"$5" "$6"_"$7"_"$8"_"$9"_"$10" "$1"_"$2"_"$3"_"$6"_"$7"_"$8)}' > stereopairs.lis
@@ -116,74 +111,68 @@ awk '{print("mkdir "$1)}' stereodirs.lis | sh
 # These files are used to ensure that the input images are specified in the same order during every step of `stereo` in ASP
 awk '{print $1" "$2 >$3"/stereopair.lis"}' stereopairs.lis
 
-# If this script is run as part of a job on Midway, we write the nodelist to a file named "nodelist.lis" so parallel_stereo can use it
-# This line is NOT portable to environments that are NOT running SLURM
-# scontrol show hostname $SLURM_NODELIST | tr ' ' '\n' > nodelist.lis
-
 
 ##   Start the big bad FOR loop to mapproject the bundle_adjust'd images onto the corresponding low-res DEM and pass to parallel_stereo
+echo "Start $(basename $0) @ "$(date)
 for i in $( cat stereodirs.lis ); do
-   cd $i
+    cd $i
+
+    # Store the complete path to the DEM we will use as the basis of the map projection step in a variable called $refdem
+    refdem=${PWD}/results_ba/dem/${i}_ba_100_fill50-DEM.tif
+
+    # If the specified DEM does not exist or does not have nonzero size, throw an error and immediately continue to the next iteration of the FOR loop.
+    if [ ! -s "$refdem" ]; then
+        echo "The specified DEM does not exist or has zero size"
+        echo $refdem
+        cd ../
+        continue
+    fi
+    # Store the names of the Level1 EO cubes in variables
+    Lcam=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
+    Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
+
+    # Mapproject the CTX images against a specific DTM using the adjusted camera information
+    echo "Projecting "$Lcam" against "$refdem
+    awk -v refdem=$refdem -v L=$Lcam '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    echo "Projecting "$Rcam" against "$refdem
+    awk -v refdem=$refdem -v R=$Rcam '{print("mapproject -t isis "refdem" "R" "$2".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+
+    # Store the names of the map-projected cubes in variables
+    Lmap=$(awk '{print($1".ba.map.tif")}' stereopair.lis)
+    Rmap=$(awk '{print($2".ba.map.tif")}' stereopair.lis)
+
+    echo "Start $(basename $0) @ "$(date)
+
+    # Run step 0 (Preprocessing)
+    parallel_stereo -t isis --stop-point 1 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+
+    # Run step 1, 2, 3 (Disparity Map Initialization, Sub-pixel Refinement, Outlier Rejection and Hole Filling)
+    parallel_stereo -t isis --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 --entry-point 1 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+
+    # finish parallel_stereo using default options for Stage 4 (Triangulation)
+    parallel_stereo -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
     
-   # Store the complete path to the DEM we will use as the basis of the map projection step in a variable called $refdem
-   refdem=${PWD}/results_ba/dem/${i}_ba_100_fill50-DEM.tif
-
-   # If the specified DEM does not exist or does not have nonzero size, throw an error and immediately continue to the next iteration of the FOR loop.
-   if [ ! -s "$refdem" ]; then
-      echo "The specified DEM does not exist or has zero size"
-      echo $refdem
-      cd ../
-      continue
-   fi
-   # Store the names of the Level1 EO cubes in variables
-   Lcam=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
-   Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
-
-   # Mapproject the CTX images against a specific DTM using the adjusted camera information
-   echo "Projecting "$Lcam" against "$refdem
-   awk -v refdem=$refdem -v L=$Lcam '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
-   echo "Projecting "$Rcam" against "$refdem
-   awk -v refdem=$refdem -v R=$Rcam '{print("mapproject -t isis "refdem" "R" "$2".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
-
-   # Store the names of the map-projected cubes in variables
-   Lmap=$(awk '{print($1".ba.map.tif")}' stereopair.lis)
-   Rmap=$(awk '{print($2".ba.map.tif")}' stereopair.lis)
-
-    
-   # Note that we specify ../nodelist.lis as the file containing the list of hostnames for `parallel_stereo` to use
-   # You may wish to edit out the --nodes-list argument if running this script in a non-SLURM environment
-   # See the ASP manual for information on running `parallel_stereo` with a node list argument that is suitable for your environment
-
-   echo "Begin parallel_stereo on "$i" at "$(date)
-    
-   # stop parallel_stereo after correlation
-   parallel_stereo -t isis --stop-point 2 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
-
-   # attempt to optimize parallel_stereo for running on the sandyb nodes (16 cores each) for Steps 2 (refinement) and 3 (filtering)
-   parallel_stereo -t isis --processes 2 --threads-multiprocess 4 --threads-singleprocess 4 --entry-point 2 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
-
-   # finish parallel_stereo using default options for Stage 4 (Triangulation)
-   parallel_stereo -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
-    
-   cd ../
-   echo "Finished parallel_stereo on "$i" at "$(date)
+    cd ../
 done
 
 
-# loop through the directories listed in stereodirs.lis and run point2dem, image footprint and hillshade generation
+# Loop through the directories listed in stereodirs.lis and run point2dem, image footprint and hillshade generation
 for i in $( cat stereodirs.lis ); do
     # cd into the directory containing the stereopair i
     cd $i
     
-    # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
-    proj=$(awk '{print("gdalsrsinfo -o proj4 "$1".map.cub")}' stereopair.lis | sh | sed 's/'\''//g')
+    # Extract the projection info from previosuly generated file
+    proj4=$(cat ${1}.proj4)    
     
     # cd into the results directory for stereopair $i
-    cd results_map_ba/	       
-    # run point2dem with orthoimage and intersection error image outputs. no hole filling
-    echo point2dem --threads 16 --t_srs \"${proj}\" -r mars --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
+    cd results_map_ba/
+    # Run point2dem with orthoimage and intersection error image outputs. no hole filling
+    #TODO: extract the worst resolution out of the stereopair (caminfo??) and do x3 to calculate output DEM resolution
+    echo "Running point2dem..."
+    echo point2dem --threads 16 --t_srs ${proj4} -r mars --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
+    echo "Running gdaldem hillshade"
     gdaldem hillshade ./dem/${i}_map_ba-DEM.tif ./dem/${i}_map_ba-hillshade.tif
 
     ## OPTIONAL ##
@@ -195,4 +184,9 @@ for i in $( cat stereodirs.lis ); do
     cd ../../
 done
 
-date
+echo "Finished $(basename $0) @ "$(date)
+
+# TODO
+# Experiment with aligning low-res DEM with MOLA, see if it yields better results.
+# cleaner work folder, leave only files that are absolutely necessary
+# test and possibly optimize multithreading with Intel hyperthreading
