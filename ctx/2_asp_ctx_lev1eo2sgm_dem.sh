@@ -137,31 +137,22 @@ for i in $( cat stereodirs.lis ); do
     echo "Running parallel_stereo"
     parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
-    echo
-    cd results_ba/
-    mkdir backup
-    cp *PC.tif backup/
-    ls -lath | grep PC.tif
-    ls -lath backup/
-    cd ..
-    echo
 
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
     caminfo from=${L} to=${L}.caminfo to=${L}.caminfo
     clon=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
-    echo "DEBUG: Variable clon = "${clon}
     rm -f ${L}.caminfo
-    # Store projection information (proj4 format) in a variable for point2dem and in a file. Transverse Mercator should work well for most images independently of Latitude.
-    # Oblique Mercator may work even better, but is more complicated to set up (requires more info) and probably overkill.
-    proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3376200 +units=m +no_defs"
+    # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.
+    # Oblique Mercator may work even better, but is more complicated to set up and probably overkill.
+    proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
+    # Save it in a file for later use.
     echo ${proj4} > ${i}.proj4
-    echo "DEBUG: Variable proj4 = "${proj4}
 
     # cd into the results directory for stereopair $i
     cd results_ba/
     # run point2dem to create 100 m/px DEM with 50 px hole-filling
     echo "Running point2dem..."
-    echo point2dem --threads ${cpus} --t_srs ${proj4} -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
+    echo point2dem --threads ${cpus} --t_srs \"${proj4}\" -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"

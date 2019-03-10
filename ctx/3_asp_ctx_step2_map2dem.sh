@@ -141,35 +141,19 @@ for i in $( cat stereodirs.lis ); do
     Lmap=$(awk '{print($1".ba.map.tif")}' stereopair.lis)
     Rmap=$(awk '{print($2".ba.map.tif")}' stereopair.lis)
 
-    echo "Start $(basename $0) @ "$(date)
-
-    # Run step 0 (Preprocessing)
-    parallel_stereo -t isis --stop-point 1 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
-
-    # Run step 1, 2, 3 (Disparity Map Initialization, Sub-pixel Refinement, Outlier Rejection and Hole Filling)
-    parallel_stereo -t isis --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 --entry-point 1 --stop-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
-
-    # finish parallel_stereo using default options for Stage 4 (Triangulation)
-    parallel_stereo -t isis --entry-point 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+    # This was once broken into stages, but I believe it complicates things and doesn't work so well. For instance, step 4 was run with 8 threads on a 4 core machine.
+    parallel_stereo -t isis --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
     
-    cd ../
-done
-
-
-# Loop through the directories listed in stereodirs.lis and run point2dem, image footprint and hillshade generation
-for i in $( cat stereodirs.lis ); do
-    # cd into the directory containing the stereopair i
-    cd $i
     
     # Extract the projection info from previosuly generated file
-    proj4=$(cat ${1}.proj4)    
+    proj4=$(cat ${i}.proj4)
     
     # cd into the results directory for stereopair $i
     cd results_map_ba/
     # Run point2dem with orthoimage and intersection error image outputs. no hole filling
-    #TODO: extract the worst resolution out of the stereopair (caminfo??) and do x3 to calculate output DEM resolution
+    # TODO: extract the worst resolution out of the stereopair (caminfo??) and do x3 to calculate output DEM resolution
     echo "Running point2dem..."
-    echo point2dem --threads 16 --t_srs ${proj4} -r mars --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
+    echo point2dem --threads 16 --t_srs \"${proj4}\" --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"
