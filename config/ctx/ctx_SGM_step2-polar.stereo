@@ -1,0 +1,92 @@
+# Stereo file optimized for usage in step 2 with SGM
+
+# Set SGM
+################################################################
+stereo-algorithm 1
+
+# Pre-Processing / stereo_pprc
+################################################################
+
+# Pre-alignment options
+#
+# Available choices are (however not all are supported by all sessions):
+# NONE           (Recommended for anything map projected)
+# EPIPOLAR       (Recommended for Pinhole Sessions)
+# HOMOGRAPHY     (Recommended for ISIS wide-angle shots)
+# AFFINEEPIPOLAR (Recommended for ISIS narrow-angle and DG sessions)
+alignment-method none
+
+# Intensity Normalization
+#force-use-entire-range       # Use entire input range
+
+# Preprocessing filter ignored by SGM
+
+# Correlation seed mode: solve for the low-resolution integer correlation disparity?
+# 0 - None (original choice by USGS, need to find why)
+# 1 - Low-resolution disparity from stereo (default)
+# 2 - Low-resolution disparity from an input DEM
+# 3 - Disparity from full-resolution images at a sparse number of points
+corr-seed-mode 1
+
+# Size of tiles used by the correlator for multi-threaded processing, must be a multiple of 16 (default = 1024)
+# Larger tile sizes produce better results but consume more memory
+corr-tile-size 3072
+
+# Size of region of additional processing around each correlation tile (default = 512)
+# Helps reduce seam artifacts at tile borders at expense of run time and memory
+sgm-collar-size 1024
+
+# Restrict memory usage in MB per process (default = 6144)
+corr-memory-limit-mb 12288
+
+# Integer Correlation / stereo_corr
+################################################################
+
+# Select a cost function to use for initialization:
+#
+# 0 - absolute difference (fast)
+# 1 - squared difference  (faster .. but usually bad)
+# 2 - normalized cross correlation (normally recommended)
+# 3 - census transform (performs bettter, may produce artifacts on featureless terrain)
+# 4 - ternary census transform (mod of 3, more stable on featureless terrain but may be less accurate elsewhere)
+# Keep in mind: SGM step is meant for featureless terrain!
+cost-mode 4
+
+# Initialization step: correlation kernel size
+# default large kernel not recommended, 7 is usually a good choice, 9 also works well
+# census cost modes (3 and 4) only work with kernel sizes 3, 5, 7, 9
+corr-kernel 9 9
+
+# Cross-correlation threshold disable by default to halve long SGM runs, turn it back on
+xcorr-threshold 3
+
+# Subpixel Refinement / stereo_rfne
+################################################################
+
+# Subpixel step: only 6-10 work in SGM
+# Default should work well, but Cosine also works well
+# 6 - SGM linear
+# 7 - SGM Poly4
+# 8 - SGM Cosine
+# 9 - SGM Parabola
+# 10 - SGM None
+# 10 - SGM Blend
+# subpixel-mode 8
+
+# Subpixel step: correlation kernel size
+#subpixel-kernel 21 21
+
+# Post Filtering / stereo_fltr
+################################################################
+
+# Set to 0 to enable filters below
+rm-cleanup-passes 0
+
+# Median filter size (default = 3)
+median-filter-size 5
+
+# Adaptive filter to smooth the disparity results inversely proportional to the amount of texture present in the input image (default = 11)
+texture-smooth-size 15
+
+# 0.13 to 0.15 is typical for icy images (default = 0.3)
+texture-smooth-scale 0.15
