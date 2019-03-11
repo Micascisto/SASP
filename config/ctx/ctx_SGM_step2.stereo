@@ -53,9 +53,9 @@ corr-memory-limit-mb 12288
 cost-mode 4
 
 # Initialization step: correlation kernel size
-# default large kernel not recommended, 7 is usually a good choice
+# default large kernel not recommended, 7 is usually a good choice, 9 also works well
 # census cost modes (3 and 4) only work with kernel sizes 3, 5, 7, 9
-corr-kernel 5 5
+corr-kernel 9 9
 
 # Cross-correlation threshold disable by default to halve long SGM runs, turn it back on
 xcorr-threshold 2
@@ -64,12 +64,14 @@ xcorr-threshold 2
 ################################################################
 
 # Subpixel step: only 6-10 work in SGM
+# Default should work well, but Cosine also works well
 # 6 - SGM linear
 # 7 - SGM Poly4
 # 8 - SGM Cosine
 # 9 - SGM Parabola
 # 10 - SGM None
 # 10 - SGM Blend
+# subpixel-mode 8
 
 # Subpixel step: correlation kernel size
 #subpixel-kernel 21 21

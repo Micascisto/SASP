@@ -131,11 +131,11 @@ parallel --joblog spiceinit.log spiceinit ${spiceweb} from={}.cub ::: ${prodarr[
 
 # Apply spicefit as appropriate based on input flag
 if [[ "$n" -eq 1 ]]; then
-   echo "WARNING: spicefit has been deactivated" 1>&2 
+	echo "WARNING: spicefit has been deactivated" 1>&2 
 else
-   #Smooth SPICE using spicefit
+	#Smooth SPICE using spicefit
 	echo "Running spicefit"
-   parallel --joblog spicefit.log spicefit from={}.cub ::: ${prodarr[@]}  
+	parallel --joblog spicefit.log spicefit from={}.cub ::: ${prodarr[@]}  
 fi
 
 # Apply CTX photometric calibration using ctxcal
