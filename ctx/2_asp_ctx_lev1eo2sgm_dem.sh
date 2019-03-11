@@ -139,7 +139,7 @@ for i in $( cat stereodirs.lis ); do
 
 
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
-    caminfo from=${L} to=${L}.caminfo to=${L}.caminfo
+    caminfo from=${L} to=${L}.caminfo
     clon=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
     rm -f ${L}.caminfo
     # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.

@@ -3,7 +3,7 @@
 # Script to take Level 1eo CTX stereopairs and run them through NASA Ames stereo Pipeline.
 # Uses ASP's bundle_adjust tool to perform bundle adjustment on each stereopair separately.
 # This script is capable of processing many stereopairs in a single run and uses GNU parallel to improve the efficiency of the processing and reduce total wall time.
-# This code doesn't use projected images in stereo. It may seem counterintuitive, but seems to work better with SGM.
+# This code uses projected images, as they seem to yield slightly better results.
 
 # Dependencies:
 #   NASA Ames Stereo Pipeline
@@ -120,8 +120,23 @@ awk '{print("mv "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
 ## Use GNU parallel to run many instances of cam2map4stereo.py at once and project the images of each stereopair into a common projection
 # Define a function that GNU parallel will call to run cam2map4stereo.py
 function cam2map4stereo() {
-    cd $3 
-cam2map4stereo.py $1.lev1eo.cub $2.lev1eo.cub
+    cd $3
+    # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
+    echo "Generating projection information"
+    caminfo from=${1}.lev1eo.cub to=${1}.caminfo
+    clon=$(grep CenterLongitude ${1}.caminfo | tr -dc '0-9.')
+    clat=$(grep CenterLatitude ${1}.caminfo | tr -dc '0-9.')
+    rm -f ${1}.caminfo
+    # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.
+    # Oblique Mercator may work even better, but is more complicated to set up and probably overkill.
+    proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
+    # Save it in a file for later use.
+    echo ${proj4} > ${3}.proj4
+    # Create a Transverse Mercator map
+    maptemplate map=${3}.map projection=transversemercator clon=${clon} clat=${clat} scalefactor=1
+    # Now run cam2map4stereo using projection info just generated
+    echo "Running cam2map4stereo"
+    cam2map4stereo.py --map=${3}.map $1.lev1eo.cub $2.lev1eo.cub
 }
 # export the function so GNU parallel can use it
 export -f cam2map4stereo
@@ -147,17 +162,6 @@ for i in $( cat stereodirs.lis ); do
     # This was once broken into stages, but I believe it complicates things and doesn't work so well. For instance, step 4 was run with 8 threads on a 4 core machine.
     echo "Running parallel_stereo"
     parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
-
-
-    # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
-    caminfo from=${L} to=${L}.caminfo to=${L}.caminfo
-    clon=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
-    rm -f ${L}.caminfo
-    # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.
-    # Oblique Mercator may work even better, but is more complicated to set up and probably overkill.
-    proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
-    # Save it in a file for later use.
-    echo ${proj4} > ${i}.proj4
 
     # cd into the results directory for stereopair $i
     cd results_ba/
