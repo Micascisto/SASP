@@ -26,7 +26,7 @@ alignment-method none
 # 1 - Low-resolution disparity from stereo (default)
 # 2 - Low-resolution disparity from an input DEM
 # 3 - Disparity from full-resolution images at a sparse number of points
-corr-seed-mode 1
+corr-seed-mode 0
 
 # Size of tiles used by the correlator for multi-threaded processing, must be a multiple of 16 (default = 1024)
 # Larger tile sizes produce better results but consume more memory
@@ -35,6 +35,9 @@ corr-tile-size 3072
 # Size of region of additional processing around each correlation tile (default = 512)
 # Helps reduce seam artifacts at tile borders at expense of run time and memory
 sgm-collar-size 1024
+
+# Size of searches aorund the expected dispairy location in successive levels of the correlation pyramid (default = 4 4)
+# sgm-search-buffer 8 8
 
 # Restrict memory usage in MB per process (default = 6144)
 corr-memory-limit-mb 12288

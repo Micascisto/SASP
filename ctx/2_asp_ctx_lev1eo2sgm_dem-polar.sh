@@ -3,7 +3,7 @@
 # Script to take Level 1eo CTX stereopairs and run them through NASA Ames stereo Pipeline.
 # Uses ASP's bundle_adjust tool to perform bundle adjustment on each stereopair separately.
 # This script is capable of processing many stereopairs in a single run and uses GNU parallel to improve the efficiency of the processing and reduce total wall time.
-# This code uses projected images, as they seem to yield slightly better results.
+# This code uses projected images, as they seem to yield much better results than the original use of unprojected images.
 
 # Dependencies:
 #   NASA Ames Stereo Pipeline
@@ -118,7 +118,7 @@ awk '{print("mv "$1".lev1eo.cub "$3)}' stereopairs.lis | sh
 awk '{print("mv "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
 
 ## Use GNU parallel to run many instances of cam2map4stereo.py at once and project the images of each stereopair into a common projection
-# Define a function that GNU parallel will call to run cam2map4stereo.py
+# Define a function that GNU parallel will call to construct projection information and run cam2map4stereo.py
 function cam2map4stereo() {
     cd $3
     # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
@@ -128,7 +128,7 @@ function cam2map4stereo() {
     clat=$(grep CenterLatitude ${1}.caminfo | tr -dc '0-9.')
     rm -f ${1}.caminfo
     # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.
-    # Oblique Mercator may work even better, but is more complicated to set up and probably overkill.
+    # Oblique Mercator may work even better, but is more complicated to set up and probably overkill. Ditto for setting a scale factor (k) other than 1.
     proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
     # Save it in a file for later use.
     echo ${proj4} > ${3}.proj4
@@ -178,5 +178,5 @@ done
 echo "Finished $(basename $0) @ "$(date)
 
 # TODO
-# cleaner work folder, leave only files that are absolutely necessary
+# cleaner work folder, leave only files that are absolutely necessary: SGM leaves many unnecessary files.
 # test and possibly optimize multithreading with Intel hyperthreading
