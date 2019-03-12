@@ -50,7 +50,7 @@ corr-memory-limit-mb 12288
 # 3 - census transform (performs bettter, may produce artifacts on featureless terrain)
 # 4 - ternary census transform (mod of 3, more stable on featureless terrain but may be less accurate elsewhere)
 # Keep in mind: SGM step is meant for featureless terrain!
-cost-mode 4
+cost-mode 3
 
 # Initialization step: correlation kernel size
 # default large kernel not recommended, 7 is usually a good choice, 9 also works well
@@ -58,7 +58,7 @@ cost-mode 4
 corr-kernel 9 9
 
 # Cross-correlation threshold disable by default to halve long SGM runs, turn it back on
-xcorr-threshold 2
+xcorr-threshold 3
 
 # Subpixel Refinement / stereo_rfne
 ################################################################

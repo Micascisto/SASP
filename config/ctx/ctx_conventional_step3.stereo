@@ -57,7 +57,7 @@ subpixel-mode 2
 
 # Subpixel step: correlation kernel size
 # Keep slighly larger with Bayes EM
-subpixel-kernel 29 29
+subpixel-kernel 25 25
 
 # Post Filtering / stereo_fltr
 ################################################################
