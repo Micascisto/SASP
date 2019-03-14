@@ -89,7 +89,7 @@ for i in $( cat ${dirs} ); do
 	cd $i
 
     # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
-	proj=$(awk '{print("gdalsrsinfo -o proj4 "$1".map.cub")}' stereopair.lis | sh | sed 's/'\''//g')
+	proj=$(cat ${1}.proj4)
     
 	# Move down into the results directory for stereopair $i
 	cd ./results_map_ba
@@ -103,7 +103,7 @@ for i in $( cat ${dirs} ); do
 
 	# Create 24 m/px DEM, no hole filling, plus errorimage and normalized DEM for debugging
 	echo "Running point2dem..."
-	point2dem --threads ${cpus} --t_srs \"${proj}\" -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24
+	echo point2dem --threads ${cpus} --t_srs \"${proj}\" -r mars --nodata -32767 -s 24 --errorimage -n ${i}_map_ba_align-trans_reference.tif -o ${i}_map_ba_align_24 | sh
 
 	# Run dem_geoid on the aligned 24 m/px DEM so that the elevation values are comparable to MOLA products
 	echo "Running dem_geoid..."
@@ -115,7 +115,7 @@ for i in $( cat ${dirs} ); do
     
 	# Create 6 m/px orthoimage, no hole-filling, no DEM
 	echo "Generating orthoimage..."
-	point2dem --threads ${cpus} --sinusoidal -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6
+	echo point2dem --threads ${cpus} --t_srs \"${proj}\" -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6 | sh
     
 	# Move back up to the root of the stereo project   
 	cd ../../../
