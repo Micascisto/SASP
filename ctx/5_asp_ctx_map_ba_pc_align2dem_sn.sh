@@ -88,8 +88,8 @@ for i in $( cat ${dirs} ); do
 	echo Working on $i
 	cd $i
 
-    # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
-	proj=$(cat ${1}.proj4)
+   # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
+	proj=$(cat ${i}.proj4)
     
 	# Move down into the results directory for stereopair $i
 	cd ./results_map_ba

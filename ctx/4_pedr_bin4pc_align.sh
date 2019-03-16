@@ -94,14 +94,12 @@ parallel_pedr_bin4pc_align (){
     pedr_list=$(basename $pedr_list)
 
     pedr2tab_bin=$5
-    # Get the name of the first map-projected cube listed in stereopairs.lis
-    cube=${1}.map.cub 
-
-    # # Get the bounding coordinates for the cube named above
-    minlong=$(getkey from=${cube} grpname=Mapping keyword=MinimumLongitude)
-    maxlat=$(getkey from=${cube} grpname=Mapping keyword=MaximumLatitude)
-    maxlong=$(getkey from=${cube} grpname=Mapping keyword=MaximumLongitude)
-    minlat=$(getkey from=${cube} grpname=Mapping keyword=MinimumLatitude)
+ 
+    #Get longitude and latitude bounds from first cube in the stereo pair
+    minlong=$(camrange from=${1}.lev1eo.cub | grep -m 1 MinimumLongitude | tr -dc '0-9.')    
+	 maxlong=$(camrange from=${1}.lev1eo.cub | grep -m 1 MaximumLongitude | tr -dc '0-9.')
+    minlat=$(camrange from=${1}.lev1eo.cub | grep -m 1 MinimumLatitude | tr -dc '0-9.')
+    maxlat=$(camrange from=${1}.lev1eo.cub | grep -m 1 MaximumLatitude | tr -dc '0-9.')
 
 ##########################################################    
 # Build a PEDR2TAB.PRM file for pedr2tab
@@ -133,7 +131,6 @@ $maxlat    # ground_latitude_max
     
 # run pedr2tab and send STDOUT to a log file (so we don't clutter up the terminal)
 pedr2tab $pedr_list > ${3}_pedr2tab.log
-
 ## Now for some housekeeping!
 # "pedr2tab" is a misnomer because the output is actually formatted as space-delimited, fixed-length columns
 #  so the first thing we want to do is transform ${3}_pedr.asc to an actual tab-delimited file that we can feed to `proj` while simultaneously eliminating columns we don't need
@@ -146,8 +143,7 @@ sed -e 's/^ \+//' -e 's/ \+/,/g' ${3}_pedr.asc | awk -F, 'NR > 2 {print($1","$2"
 inputTAB=${3}_pedr.tab
 
 # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for proj)
-projstr=$(gdalsrsinfo -o proj4 $cube | sed 's/'\''//g')
-echo $projstr
+projstr=$(cat ${3}.proj4)
 
 echo "#Latitude,Longitude,Datum_Elevation,Easting,Northing,Orbit" > ${3}_pedr.csv
 proj $projstr $inputTAB | sed 's/\t/,/g' | awk -F, '{print($5","$4","$3","$1","$2","$6)}' >> ${3}_pedr.csv
