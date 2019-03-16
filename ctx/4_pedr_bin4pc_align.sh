@@ -18,16 +18,14 @@
 
 ##################################
 
-date
-
 # Just a simple function to print a usage message
 print_usage (){
-echo
-echo "Usage: $(basename $0) <pedr_list.lis>"
-echo " Where <pedr_list.lis> is a file containing a list of the MOLA PEDR binary files to search through, including absolute path."
-echo " <pedr_list.lis> itself should should be specified using the absolute path to its location."
-echo "  This file is required by pedr2tab."
-echo
+    echo
+    echo "Usage: $(basename $0) <pedr_list.lis>"
+    echo " Where <pedr_list.lis> is a file containing a list of the MOLA PEDR binary files to search through, including absolute path."
+    echo " <pedr_list.lis> itself should should be specified using the absolute path to its location."
+    echo "  This file is required by pedr2tab."
+    echo
 }
 
 ### Check for sane commandline arguments and verify that several essential files exist ###
@@ -39,47 +37,49 @@ print_usage
 exit
 fi
 
+# Begin script
+echo "Start $(basename $0) @ "$(date)
+
 # store the first argument in a variable called $pedr_list
 pedr_list=$1
+# Quick test to see if the file $pedr_list exists and is a regular file
+if [ ! -f "$pedr_list" ]; then
+    echo "$1 not found"
+    print_usage
+     exit 1
+fi
 
-    # Quick test to see if the file $pedr_list exists and is a regular file
-    if [ ! -f "$pedr_list" ]; then
-	echo "$1 not found"
-	print_usage
-	exit 1
-    fi
+# Test that pedr2tab exists and is executable
+if [ ! -x "$(which pedr2tab)" ]; then
+    echo "pedr2tab not found in PATH or is not executable" 1>&2
+    echo "Make sure you have added pedr2tab to your PATH variable" 1>&2
+    echo " and that the file is executable." 1>&2
+    print_usage
+    exit 1
+fi
 
-    # Test that pedr2tab exists and is executable
-    if [ ! -x "$(which pedr2tab)" ]; then
-	echo "pedr2tab not found in PATH or is not executable" 1>&2
-        echo "Make sure you have added pedr2tab to your PATH variable" 1>&2
-        echo " and that the file is executable." 1>&2
-	print_usage
-	exit 1
-    fi
-
-   # Test that a file named "stereopairs.lis" exists in the current directory
-    if [ ! -e "stereopairs.lis" ]; then
+# Test that a file named "stereopairs.lis" exists in the current directory
+if [ ! -e "stereopairs.lis" ]; then
 	echo "stereopairs.lis not found"
 	print_usage
 	exit 1
-    fi
+fi
 
-    # If the input file exists, check that ISIS has been initialized by looking for pds2isis,
-    #  if not, initialize it
-    if [[ $(which pds2isis) = "" ]]; then
-        echo "Initializing ISIS3"
-        source $ISISROOT/scripts/isis3Startup.sh
+# If the input file exists, check that ISIS has been initialized by looking for pds2isis,
+#  if not, initialize it
+if [[ $(which pds2isis) = "" ]]; then
+    echo "Initializing ISIS3"
+    source $ISISROOT/scripts/isis3Startup.sh
     # Quick test to make sure that initialization worked
     # If not, print an error and exit
-       if [[ $(which pds2isis) = "" ]]; then
-           echo "ERROR: Failed to initialize ISIS3" 1>&2
-           exit 1
-       fi
+    if [[ $(which pds2isis) = "" ]]; then
+        echo "ERROR: Failed to initialize ISIS3" 1>&2
+        exit 1
     fi
-    # Force the ISIS binary dir to the front of $PATH
-    # This works around possible name collision with `getkey` on some systems
-	PATH=$ISISROOT/bin:$PATH
+fi
+# Force the ISIS binary dir to the front of $PATH
+# This works around possible name collision with `getkey` on some systems
+PATH=$ISISROOT/bin:$PATH
 
 
 # Define a function that can be used by GNU Parallel
@@ -94,18 +94,19 @@ parallel_pedr_bin4pc_align (){
     pedr_list=$(basename $pedr_list)
 
     pedr2tab_bin=$5
- 
+
     #Get longitude and latitude bounds from first cube in the stereo pair
     minlong=$(camrange from=${1}.lev1eo.cub | grep -m 1 MinimumLongitude | tr -dc '0-9.')    
-	 maxlong=$(camrange from=${1}.lev1eo.cub | grep -m 1 MaximumLongitude | tr -dc '0-9.')
+    maxlong=$(camrange from=${1}.lev1eo.cub | grep -m 1 MaximumLongitude | tr -dc '0-9.')
     minlat=$(camrange from=${1}.lev1eo.cub | grep -m 1 MinimumLatitude | tr -dc '0-9.')
     maxlat=$(camrange from=${1}.lev1eo.cub | grep -m 1 MaximumLatitude | tr -dc '0-9.')
 
-##########################################################    
-# Build a PEDR2TAB.PRM file for pedr2tab
-##########################################################
+    ##########################################################    
+    # Build a PEDR2TAB.PRM file for pedr2tab
+    ##########################################################
 
-## Template used to build the PEDR2TAB.PRM file:
+    ## Template used to build the PEDR2TAB.PRM file:
+    #TODO: indent? or tabs break the code?
 echo "T # lhdr
 T # 0: shot longitude, latitude, topo, range, planetary_radius,ichan,aflag
 F # 1: MGS_longitude, MGS_latitude, MGS_radius
@@ -120,39 +121,38 @@ T # F = noise or clouds, T = ground returns
 T # do crossover correction
 T \"${3}_pedr.asc\" # Name of file to write output to (must be enclosed in quotes).
 
-$minlong     # ground_longitude_min
+$minlong    # ground_longitude_min
 $maxlong    # ground_longitude_max
 $minlat    # ground_latitude_min
 $maxlat    # ground_latitude_max
 
 192.    # flattening used for areographic latitude" > PEDR2TAB.PRM
 
-##########################################################
+    ##########################################################
     
-# run pedr2tab and send STDOUT to a log file (so we don't clutter up the terminal)
-pedr2tab $pedr_list > ${3}_pedr2tab.log
-## Now for some housekeeping!
-# "pedr2tab" is a misnomer because the output is actually formatted as space-delimited, fixed-length columns
-#  so the first thing we want to do is transform ${3}_pedr.asc to an actual tab-delimited file that we can feed to `proj` while simultaneously eliminating columns we don't need
-#  The remaining columns will be:
-#   Longitude, Latitude, Datum_Elevation, Longitude, Latitude, Orbit
-#  We print the Longitude and Latitude columns twice to make things easier later after running `proj`
-# Delete 1 or more spaces at the beginning of each line and convert groups of 1 or more remaining spaces to a single comma | Rearrange the columns and calculate datum elevation | convert comma delimiter to tab delimiter and direct to file
-sed -e 's/^ \+//' -e 's/ \+/,/g' ${3}_pedr.asc | awk -F, 'NR > 2 {print($1","$2","($5 - 3396190)","$1","$2","$10)}' | sed 's/,/\t/g' > ${3}_pedr.tab
+    # run pedr2tab and send STDOUT to a log file (so we don't clutter up the terminal)
+    pedr2tab $pedr_list > ${3}_pedr2tab.log
+    ## Now for some housekeeping!
+    # "pedr2tab" is a misnomer because the output is actually formatted as space-delimited, fixed-length columns
+    #  so the first thing we want to do is transform ${3}_pedr.asc to an actual tab-delimited file that we can feed to `proj` while simultaneously eliminating columns we don't need
+    #  The remaining columns will be:
+    #   Longitude, Latitude, Datum_Elevation, Longitude, Latitude, Orbit
+    #  We print the Longitude and Latitude columns twice to make things easier later after running `proj`
+    # Delete 1 or more spaces at the beginning of each line and convert groups of 1 or more remaining spaces to a single comma | Rearrange the columns and calculate datum elevation | convert comma delimiter to tab delimiter and direct to file
+    sed -e 's/^ \+//' -e 's/ \+/,/g' ${3}_pedr.asc | awk -F, 'NR > 2 {print($1","$2","($5 - 3396190)","$1","$2","$10)}' | sed 's/,/\t/g' > ${3}_pedr.tab
 
-inputTAB=${3}_pedr.tab
+    inputTAB=${3}_pedr.tab
 
-# extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for proj)
-projstr=$(cat ${3}.proj4)
+    # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for proj)
+    projstr=$(cat ${3}.proj4)
 
-echo "#Latitude,Longitude,Datum_Elevation,Easting,Northing,Orbit" > ${3}_pedr.csv
-proj $projstr $inputTAB | sed 's/\t/,/g' | awk -F, '{print($5","$4","$3","$1","$2","$6)}' >> ${3}_pedr.csv
+    echo "#Latitude,Longitude,Datum_Elevation,Easting,Northing,Orbit" > ${3}_pedr.csv
+    proj $projstr $inputTAB | sed 's/\t/,/g' | awk -F, '{print($5","$4","$3","$1","$2","$6)}' >> ${3}_pedr.csv
 
-# # Clean up extraneous files
- rm ${3}_pedr.asc ${3}_pedr.tab
+    # # Clean up extraneous files
+    rm ${3}_pedr.asc ${3}_pedr.tab
 
-# ## TODO: Add functionality to build VRT for CSV and then convert to shapefile using ogr2ogr
-
+    # ## TODO: Add functionality to build VRT for CSV and then convert to shapefile using ogr2ogr
 }
 
 #############################################################################
@@ -162,4 +162,4 @@ export -f parallel_pedr_bin4pc_align
 # Call the function
 awk -v pedrlist=$pedr_list '{print($0" "pedrlist)}' stereopairs.lis | parallel --joblog parallel_pedr_bin4pc_align.log --colsep ' ' parallel_pedr_bin4pc_align
 
-date
+echo "Finished $(basename $0) @ "$(date)

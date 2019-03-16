@@ -38,17 +38,17 @@ elif  [[ "$1" = "-"* ]]; then
 	      		echo "ERROR: File $OPTARG not found"
 	         	print_usage
 	        		exit 1
-	      	fi
-	      	dirs=$OPTARG
+	      		fi
+	      		dirs=$OPTARG
 				;;
-		   m)     
+			m)     
 				# Test that the argument accompanying m is a positive integer
-	      	if ! test "$OPTARG" -gt 0 2> /dev/null ; then
-	        		echo "ERROR: $OPTARG not a valid argument"
-	            echo "The maximum displacement must be a positive integer"
-	            print_usage
-	        	   exit 1
-	      	else
+				if ! test "$OPTARG" -gt 0 2> /dev/null ; then
+					echo "ERROR: $OPTARG not a valid argument"
+					echo "The maximum displacement must be a positive integer"
+					print_usage
+					exit 1
+				else
 					maxd=$OPTARG
 				fi
 				;;
@@ -88,7 +88,7 @@ for i in $( cat ${dirs} ); do
 	echo Working on $i
 	cd $i
 
-   # extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
+	# extract the proj4 string from one of the map-projected image cubes and store it in a variable (we'll need it later for point2dem)
 	proj=$(cat ${i}.proj4)
     
 	# Move down into the results directory for stereopair $i
