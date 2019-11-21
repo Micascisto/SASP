@@ -105,8 +105,9 @@ for ((i = 0; i <= max_index; i++)); do
 	elif [[ -e ${prodarr[$i]}.img ]]; then
 		edrarr[$i]="${prodarr[$i]}.img"
 	else
-		echo "Warning: "${prodarr[$i]}" EDR Not Found and will Be Skipped" 1>&2
+		echo "Warning: "${prodarr[$i]}" EDR not found, exiting" 1>&2
 		unset -v 'prodarr[$i]'
+		exit 0
 	fi
 done
 # Force recalculation of array indices to remove gaps in case we have made the array sparse

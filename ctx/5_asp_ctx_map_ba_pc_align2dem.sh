@@ -90,7 +90,7 @@ for i in $( cat ${dirs} ); do
     cd ./results_map_ba
     # run pc_align and send the output to a new subdirectory called dem_align
     echo "Running pc_align..."
-    pc_align --num-iterations 2000 --threads 4 --max-displacement $maxd --highest-accuracy ${i}_map_ba-PC.tif ../${i}_pedr4align.csv -o dem_align/${i}_map_ba_align --datum D_MARS --save-inv-trans
+    pc_align --num-iterations 2000 --threads 4 --max-displacement $maxd --highest-accuracy ${i}_map_ba-PC.tif ../${i}_pedr.csv -o dem_align/${i}_map_ba_align --datum D_MARS --save-inv-trans
     
     # move down into the directory with the pc_align output, which should be called "dem_align"
     cd ./dem_align
