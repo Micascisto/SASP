@@ -113,7 +113,7 @@ for i in $( cat ${dirs} ); do
 	echo "Generating hillshade with gdaldem"
 	gdaldem hillshade ${i}_map_ba_align_24-DEM.tif ${i}_map_ba_align_24-hillshade.tif
     
-	# Create 6 m/px orthoimage, no hole-filling, no DEM
+	# Create orthoimage, no hole-filling, no DEM
 	echo "Generating orthoimage..."
 	echo point2dem --threads ${cpus} --t_srs \"${proj}\" -r mars --nodata -32767 -s 6  --no-dem ${i}_map_ba_align-trans_reference.tif --orthoimage ../${i}_map_ba-L.tif -o ${i}_map_ba_align_6 | sh
     

@@ -116,11 +116,12 @@ for i in $( cat stereodirs.lis ); do
     Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
 
     # Mapproject the CTX images against a specific DTM using the adjusted camera information
-    # TODO: use actual image resolutions instead of 6 m
+    res_l=$(grep PixelResolution ${L}.caminfo | tr -dc '0-9.')
     echo "Projecting "$Lcam" against "$refdem
-    awk -v refdem=$refdem -v L=$Lcam '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    awk -v refdem=$refdem -v L=$Lcam res=$res_l '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    res_r=$(grep PixelResolution ${R}.caminfo | tr -dc '0-9.')
     echo "Projecting "$Rcam" against "$refdem
-    awk -v refdem=$refdem -v R=$Rcam '{print("mapproject -t isis "refdem" "R" "$2".ba.map.tif --mpp 6 --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    awk -v refdem=$refdem -v R=$Rcam res=$res_r '{print("mapproject -t isis "refdem" "R" "$2".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
 
     # Store the names of the map-projected cubes in variables
     Lmap=$(awk '{print($1".ba.map.tif")}' stereopair.lis)

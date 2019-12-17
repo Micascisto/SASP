@@ -93,6 +93,13 @@ if [[ $(which pds2isis) = "" ]]; then
     fi
 fi
 
+# Create backup of existing files
+if [ ! -d "step1_backup" ]; then
+  mkdir ../step1_backup
+  cp -a . ../step1_backup/
+  mv ../step1_backup .
+fi
+
 
 ## Begin processing
 echo "Start $(basename $0) @ "$(date)

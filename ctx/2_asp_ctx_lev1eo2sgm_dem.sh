@@ -138,12 +138,14 @@ for i in $( cat stereodirs.lis ); do
     parallel_stereo --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 ${L} ${R} -s ${config} results_ba/${i}_ba --bundle-adjust-prefix adjust/ba
 
 
-    # Extract the center longitude from the left image via caminfo and some parsing, then delete the caminfo output file
+    # Extract the center longitude from both images via caminfo and some parsing
     caminfo from=${L} to=${L}.caminfo
-    clon=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
-    rm -f ${L}.caminfo
+    clon_l=$(grep CenterLongitude ${L}.caminfo | tr -dc '0-9.')
+    caminfo from=${R} to=${R}.caminfo
+    clon_r=$(grep CenterLongitude ${R}.caminfo | tr -dc '0-9.')
     # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.
     # Oblique Mercator may work even better, but is more complicated to set up and probably overkill.
+    clon = (clon_l + clon_r)/2
     proj4="+proj=tmerc +lat_0=0 +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3396190 +units=m +no_defs"
     # Save it in a file for later use.
     echo ${proj4} > ${i}.proj4
