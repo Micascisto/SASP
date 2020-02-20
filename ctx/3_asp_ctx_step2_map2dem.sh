@@ -96,17 +96,17 @@ fi
 
 
 ##   Start the big bad FOR loop to mapproject the bundle_adjust'd images onto the corresponding low-res DEM and pass to parallel_stereo
-echo "Start $(basename $0) @ "$(date)
+echo "Start $(basename ${0}) @ "$(date)
 for i in $( cat stereodirs.lis ); do
-    cd $i
+    cd ${i}
 
     # Store the complete path to the DEM we will use as the basis of the map projection step in a variable called $refdem
     refdem=${PWD}/results_ba/dem/${i}_ba_100_fill50-DEM.tif
 
     # If the specified DEM does not exist or does not have nonzero size, throw an error and immediately continue to the next iteration of the FOR loop.
-    if [ ! -s "$refdem" ]; then
+    if [ ! -s "${refdem}" ]; then
         echo "The specified DEM does not exist or has zero size"
-        echo $refdem
+        echo ${refdem}
         cd ../
         continue
     fi
@@ -117,18 +117,18 @@ for i in $( cat stereodirs.lis ); do
 
     # Mapproject the CTX images against a specific DTM using the adjusted camera information
     res_l=$(grep PixelResolution ${L}.caminfo | tr -dc '0-9.')
-    echo "Projecting "$Lcam" against "$refdem
-    awk -v refdem=$refdem -v L=$Lcam res=$res_l '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    echo "Projecting ${Lcam} against ${refdem}"
+    awk -v refdem=${refdem} -v L=${Lcam} res=${res_l} '{print("mapproject -t isis "refdem" "L" "${1}".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
     res_r=$(grep PixelResolution ${R}.caminfo | tr -dc '0-9.')
-    echo "Projecting "$Rcam" against "$refdem
-    awk -v refdem=$refdem -v R=$Rcam res=$res_r '{print("mapproject -t isis "refdem" "R" "$2".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    echo "Projecting ${Rcam} against ${refdem}"
+    awk -v refdem=${refdem} -v R=${Rcam} res=${res_r} '{print("mapproject -t isis "refdem" "R" "${2}".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
 
     # Store the names of the map-projected cubes in variables
-    Lmap=$(awk '{print($1".ba.map.tif")}' stereopair.lis)
-    Rmap=$(awk '{print($2".ba.map.tif")}' stereopair.lis)
+    Lmap=$(awk '{print(${1}".ba.map.tif")}' stereopair.lis)
+    Rmap=$(awk '{print(${2}".ba.map.tif")}' stereopair.lis)
 
     # This was once broken into stages, but I believe it complicates things and doesn't work so well. For instance, step 4 was run with 8 threads on a 4 core machine.
-    parallel_stereo -t isis --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 $Lmap $Rmap $Lcam $Rcam -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba $refdem
+    parallel_stereo -t isis --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 ${Lmap} ${Rmap} ${Lcam} ${Rcam} -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba ${refdem}
     
     
     # Extract the projection info from previosuly generated file
@@ -137,9 +137,9 @@ for i in $( cat stereodirs.lis ); do
     # cd into the results directory for stereopair $i
     cd results_map_ba/
     # Run point2dem with orthoimage and intersection error image outputs. No hole filling.
-    # TODO: extract the worst resolution out of the stereopair (caminfo??) and do x3 to calculate output DEM resolution
+    # TODO: extract the worst resolution out of the stereopair (caminfo??) and do x4 to calculate output DEM resolution
     echo "Running point2dem..."
-    echo point2dem --threads 16 --t_srs \"${proj4}\" -r mars --nodata -32767 -s 18 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
+    echo point2dem --threads 16 --t_srs \"${proj4}\" -r mars --nodata -32767 -s 24 -n --errorimage ${i}_map_ba-PC.tif --orthoimage ${i}_map_ba-L.tif -o dem/${i}_map_ba | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade"
@@ -154,7 +154,7 @@ for i in $( cat stereodirs.lis ); do
     cd ../../
 done
 
-echo "Finished $(basename $0) @ "$(date)
+echo "Finished $(basename ${0}) @ "$(date)
 
 # TODO
 # Experiment with aligning low-res DEM with MOLA, see if it yields better results.
