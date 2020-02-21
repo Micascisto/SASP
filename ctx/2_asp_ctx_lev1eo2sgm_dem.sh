@@ -123,8 +123,8 @@ function cam2map4stereo() {
     cd ${3}
 
     # Store the names of the Level1 EO cubes in variables
-    L=$(awk '{print(${1}".lev1eo.cub")}' stereopair.lis)
-    R=$(awk '{print(${2}".lev1eo.cub")}' stereopair.lis)
+    L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
+    R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
 
     # Extract the center lon/lat from both images via caminfo and some parsing
     caminfo from=${L} to=${L}.caminfo
@@ -163,8 +163,8 @@ for i in $( cat stereodirs.lis ); do
     cd ${i}
 
     # Store the names of the Level1 EO cubes in variables
-    L=$(awk '{print(${1}".lev1eo.cub")}' stereopair.lis)
-    R=$(awk '{print(${2}".lev1eo.cub")}' stereopair.lis)
+    L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
+    R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
 
     # Run ASP's bundle_adjust on the given stereopair
     echo "Running bundle_adjust..."

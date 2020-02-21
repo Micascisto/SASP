@@ -116,21 +116,20 @@ for i in $( cat stereodirs.lis ); do
     Rcam=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
 
     # Mapproject the CTX images against a specific DTM using the adjusted camera information
-    res_l=$(grep PixelResolution ${L}.caminfo | tr -dc '0-9.')
+    res_l=$(grep PixelResolution ${Lcam}.caminfo | tr -dc '0-9.')
     echo "Projecting ${Lcam} against ${refdem}"
-    awk -v refdem=${refdem} -v L=${Lcam} res=${res_l} '{print("mapproject -t isis "refdem" "L" "${1}".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
-    res_r=$(grep PixelResolution ${R}.caminfo | tr -dc '0-9.')
+    awk -v refdem=$refdem -v L=$Lcam res=$res_l '{print("mapproject -t isis "refdem" "L" "$1".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    res_r=$(grep PixelResolution ${Rcam}.caminfo | tr -dc '0-9.')
     echo "Projecting ${Rcam} against ${refdem}"
-    awk -v refdem=${refdem} -v R=${Rcam} res=${res_r} '{print("mapproject -t isis "refdem" "R" "${2}".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
+    awk -v refdem=$refdem -v R=$Rcam res=$res_r '{print("mapproject -t isis "refdem" "R" "$2".ba.map.tif --mpp "res" --bundle-adjust-prefix adjust/ba")}' stereopair.lis | sh
 
     # Store the names of the map-projected cubes in variables
-    Lmap=$(awk '{print(${1}".ba.map.tif")}' stereopair.lis)
-    Rmap=$(awk '{print(${2}".ba.map.tif")}' stereopair.lis)
+    Lmap=$(awk '{print($1".ba.map.tif")}' stereopair.lis)
+    Rmap=$(awk '{print($2".ba.map.tif")}' stereopair.lis)
 
     # This was once broken into stages, but I believe it complicates things and doesn't work so well. For instance, step 4 was run with 8 threads on a 4 core machine.
     parallel_stereo -t isis --processes ${cpus} --threads-multiprocess 1 --threads-singleprocess 4 ${Lmap} ${Rmap} ${Lcam} ${Rcam} -s ${config} results_map_ba/${i}_map_ba --bundle-adjust-prefix adjust/ba ${refdem}
-    
-    
+        
     # Extract the projection info from previosuly generated file
     proj4=$(cat ${i}.proj4)
     
