@@ -14,7 +14,7 @@ stereo-algorithm 1
 # EPIPOLAR       (Recommended for Pinhole Sessions)
 # HOMOGRAPHY     (Recommended for ISIS wide-angle shots)
 # AFFINEEPIPOLAR (Recommended for ISIS narrow-angle and DG sessions) <- input images not projected, use this
-alignment-method affineepipolar
+alignment-method none
 
 # Intensity Normalization
 # force-use-entire-range       # Use entire input range
@@ -30,11 +30,11 @@ corr-seed-mode 1
 
 # Size of tiles used by the correlator for multi-threaded processing, must be a multiple of 16 (default = 1024)
 # Larger tile sizes produce better results but consume more memory
-corr-tile-size 1536
+corr-tile-size 2048
 
 # Size of region of additional processing around each correlation tile (default = 512)
 # Helps reduce seam artifacts at tile borders at expense of run time and memory
-sgm-collar-size 512
+sgm-collar-size 768
 
 # Size of searches aorund the expected dispairy location in successive levels of the correlation pyramid (default = 4 4)
 # sgm-search-buffer 8 8
@@ -60,7 +60,7 @@ cost-mode 3
 # census cost modes (3 and 4) only work with kernel sizes 3, 5, 7, 9
 corr-kernel 9 9
 
-# Cross-correlation threshold disable by default to halve long SGM runs, turn it back on
+# Cross-correlation threshold disabled by default to halve long SGM runs, turn it back on
 xcorr-threshold 3
 
 # Subpixel Refinement / stereo_rfne
@@ -74,7 +74,7 @@ xcorr-threshold 3
 # 9 - SGM Parabola
 # 10 - SGM None
 # 10 - SGM Blend
-# subpixel-mode 8
+subpixel-mode 8
 
 # Subpixel step: correlation kernel size
 #subpixel-kernel 21 21

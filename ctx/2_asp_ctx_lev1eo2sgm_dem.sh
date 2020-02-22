@@ -116,11 +116,12 @@ awk '{print $1" "$2 > $3"/stereopair.lis"}' stereopairs.lis
 awk '{print("cp "$1".lev1eo.cub "$3)}' stereopairs.lis | sh
 awk '{print("cp "$2".lev1eo.cub "$3)}' stereopairs.lis | sh
 
+for i in $( cat stereodirs.lis ); do
 
-## Use GNU parallel to run many instances of cam2map4stereo.py at once and project the images of each stereopair into a common projection
-# Define a function that GNU parallel will call to construct projection information and run cam2map4stereo.py
-function cam2map4stereo() {
-    cd ${3}
+    echo "Creating projection information for ${i}..."
+    
+    # Move inside stereopair directory
+    cd ${i}
 
     # Store the names of the Level1 EO cubes in variables
     L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
@@ -137,17 +138,25 @@ function cam2map4stereo() {
     clon=$(echo "scale=9; (${clon_l}+${clon_r})/2" | bc)
     clat=$(echo "scale=9; (${clat_l}+${clat_r})/2" | bc)
 
-    # Store projection information (proj4 format) in a variable for point2dem. Transverse Mercator should work well for most images independently of latitude.
+    # Store projection information in a proj4 format file. Transverse Mercator should work well for most images independently of latitude.
     # Oblique Mercator may work even better, but is more complicated to set up and probably overkill. Same for setting a scale factor (k) other than 1.
-    proj4="+proj=tmerc +lat_0=${clat} +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3376200 +units=m +no_defs"
-    # Save it in a file for later use.
-    echo ${proj4} > ${3}.proj4
+    echo "+proj=tmerc +lat_0=${clat} +lon_0=${clon} +k=1 +x_0=0 +y_0=0 +a=3396190 +b=3376200 +units=m +no_defs" > ${i}.proj4
 
-    # Create a Transverse Mercator map
-    maptemplate map=${3}.map projection=transversemercator clon=${clon} clat=${clat} scalefactor=1
-    # Now run cam2map4stereo using projection info just generated
-    echo "Running cam2map4stereo"
+    # Create a Transverse Mercator map file, too
+    maptemplate map=${i}.map projection=transversemercator clon=${clon} clat=${clat} scalefactor=1 targopt=user targetname=MARS
+
+    cd ..
+
+done
+
+
+## Use GNU parallel to run many instances of cam2map4stereo.py at once and project the images of each stereopair into a common projection
+# Define a function that GNU parallel will call to run cam2map4stereo.py
+function cam2map4stereo() {
+    echo "Running cam2map4stereo for ${3}..."
+    cd ${3}
     cam2map4stereo.py --map=${3}.map ${1}.lev1eo.cub ${2}.lev1eo.cub
+    cd ..
 }
 # Export the function so GNU parallel can use it
 export -f cam2map4stereo
@@ -163,8 +172,11 @@ for i in $( cat stereodirs.lis ); do
     cd ${i}
 
     # Store the names of the Level1 EO cubes in variables
-    L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis)
-    R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis)
+    L=$(awk '{print($1".map.cub")}' stereopair.lis)
+    R=$(awk '{print($2".map.cub")}' stereopair.lis)
+
+    # Store proj4 string into variable
+    proj4=$(cat ${i}.proj4)
 
     # Run ASP's bundle_adjust on the given stereopair
     echo "Running bundle_adjust..."
@@ -179,12 +191,14 @@ for i in $( cat stereodirs.lis ); do
     cd results_ba/
     # Run point2dem to create 100 m/px DEM with 50 px hole-filling
     echo "Running point2dem..."
-    echo point2dem --threads ${cpus} --t_srs \"${proj4}\" -r mars --nodata -32767 -s 100 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
+    echo point2dem --threads ${cpus} --t_srs \"${proj4}\" --nodata -32767 -s 25 --dem-hole-fill-len 50 ${i}_ba-PC.tif -o dem/${i}_ba_100_fill50 | sh
 
     # Generate hillshade (useful for getting feel for textural quality of the DEM)
     echo "Running gdaldem hillshade..."
     gdaldem hillshade ./dem/${i}_ba_100_fill50-DEM.tif ./dem/${i}_ba_100_fill50-hillshade.tif
+
     cd ../../
+
 done
 
 echo "Finished $(basename $0) @ "$(date)
