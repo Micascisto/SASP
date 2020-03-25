@@ -26,7 +26,7 @@ alignment-method none
 # 1 - Low-resolution disparity from stereo (default)
 # 2 - Low-resolution disparity from an input DEM
 # 3 - Disparity from full-resolution images at a sparse number of points
-corr-seed-mode 1
+corr-seed-mode 3
 
 # Size of tiles used by the correlator for multi-threaded processing, must be a multiple of 16 (default = 1024)
 # Larger tile sizes produce better results but consume more memory
@@ -34,7 +34,7 @@ corr-tile-size 2048
 
 # Size of region of additional processing around each correlation tile (default = 512)
 # Helps reduce seam artifacts at tile borders at expense of run time and memory
-sgm-collar-size 768
+sgm-collar-size 1024
 
 # Size of searches aorund the expected dispairy location in successive levels of the correlation pyramid (default = 4 4)
 # sgm-search-buffer 8 8
@@ -46,7 +46,6 @@ corr-memory-limit-mb 12288
 ################################################################
 
 # Select a cost function to use for initialization:
-#
 # 0 - absolute difference (fast)
 # 1 - squared difference  (faster .. but usually bad)
 # 2 - normalized cross correlation (normally recommended)
@@ -60,6 +59,9 @@ cost-mode 3
 # census cost modes (3 and 4) only work with kernel sizes 3, 5, 7, 9
 corr-kernel 9 9
 
+# Max number of low-res levels to perform xcorr (default = 5)
+corr-max-levels 2
+
 # Cross-correlation threshold disabled by default to halve long SGM runs, turn it back on
 xcorr-threshold 3
 
@@ -67,14 +69,20 @@ xcorr-threshold 3
 ################################################################
 
 # Subpixel step: only 6-10 work in SGM
-# Default should work well, but Cosine also works well
-# 6 - SGM linear
-# 7 - SGM Poly4
-# 8 - SGM Cosine
-# 9 - SGM Parabola
-# 10 - SGM None
-# 10 - SGM Blend
-subpixel-mode 8
+# 0 - no subpixel refinement
+# 1 - parabola fitting <-- default, works ok
+# 2 - affine adaptive window, Bayes EM weighting <-- should look better
+# 3 - affine window <-- faster than 2, similar results if data has low noise
+# 4 - phase correlation <-- slow, may be better than 2, especially flat terrain
+# 5 - Lucas-Kanade method (experimental)
+# 6 - affine adaptive window, Bayes EM with Gamma Noise Distribution (experimental)
+# 7 - SGM None
+# 8 - SGM linear
+# 9 - SGM Poly4
+# 10 - SGM Cosine
+# 11 - SGM Parabola
+# 12 - SGM Blend <-- should work well
+subpixel-mode 9
 
 # Subpixel step: correlation kernel size
 #subpixel-kernel 21 21
@@ -91,5 +99,5 @@ median-filter-size 5
 # Adaptive filter to smooth the disparity results inversely proportional to the amount of texture present in the input image (default = 11)
 texture-smooth-size 15
 
-# 0.13 to 0.15 is typical for icy images (default = 0.3)
+# 0.13 to 0.15 is typical for icy images (default = 0.13)
 texture-smooth-scale 0.15

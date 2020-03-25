@@ -161,7 +161,7 @@ function cam2map4stereo() {
 # Export the function so GNU parallel can use it
 export -f cam2map4stereo
 # Run the function using parallel
-parallel --colsep ' ' --joblog parallel_cam2map4stereo.log cam2map4stereo :::: stereopairs.lis
+#parallel --colsep ' ' --joblog parallel_cam2map4stereo.log cam2map4stereo :::: stereopairs.lis
 
 
 ##  Run ALL stereo in series for each stereopair using parallel_stereo. Use Semi-Global Matching settings here.
@@ -172,8 +172,8 @@ for i in $( cat stereodirs.lis ); do
     cd ${i}
 
     # Store the names of the Level1 EO cubes in variables
-    L=$(awk '{print($1".map.cub")}' stereopair.lis)
-    R=$(awk '{print($2".map.cub")}' stereopair.lis)
+    L=$(awk '{print($1".lev1eo.cub")}' stereopair.lis) #add .map here
+    R=$(awk '{print($2".lev1eo.cub")}' stereopair.lis) #add .map here
 
     # Store proj4 string into variable
     proj4=$(cat ${i}.proj4)
