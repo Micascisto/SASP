@@ -26,7 +26,7 @@ alignment-method none
 # 1 - Low-resolution disparity from stereo (default)
 # 2 - Low-resolution disparity from an input DEM
 # 3 - Disparity from full-resolution images at a sparse number of points
-corr-seed-mode 3
+corr-seed-mode 1
 
 # Size of tiles used by the correlator for multi-threaded processing, must be a multiple of 16 (default = 1024)
 # Larger tile sizes produce better results but consume more memory
